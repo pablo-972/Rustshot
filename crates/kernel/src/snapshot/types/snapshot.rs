@@ -52,8 +52,6 @@ pub struct SnapshotData {
 }
 
 
-/// Operating system where the snapshot was taken.
-/// Fields are None when Windows does not provide them.
 #[derive(
     Debug,
     Clone,
@@ -64,24 +62,16 @@ pub struct SnapshotData {
     Deserialize
 )]
 pub struct SystemInfo {
-    /// For example "Windows 7 Professional".
     pub name: Option<String>,
-    /// Kernel version, for example "6.1" or "10.0".
     pub version: Option<String>,
-    /// Feature update, for example "22H2". Windows 10 and later only.
     pub release: Option<String>,
-    /// Build and revision, for example "7601.24544".
     pub build: Option<String>,
-    /// For example "Service Pack 1". Up to Windows 8.1 only.
     pub service_pack: Option<String>,
-    /// For example "Professional".
     pub edition: Option<String>,
-    /// Architecture of the system, for example "AMD64" or "x86".
     pub architecture: Option<String>,
 }
 
 
-/// Machine and user that took the snapshot.
 #[derive(
     Debug,
     Clone,
