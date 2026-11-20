@@ -14,8 +14,13 @@ const BINARY_PREVIEW: usize = 32;
 pub(super) const FORMAT: char = '\u{1}';
 
 // Font sizes of the key path and of the value.
-const KEY_SIZE: i32 = 11;
-const VALUE_SIZE: i32 = 12;
+const KEY_SIZE: i32 = 12;
+const VALUE_SIZE: i32 = 13;
+
+// Height of the empty lines used as space: around each change, and between
+// the key and the value.
+const AROUND: i32 = 10;
+const BETWEEN: i32 = 4;
 
 
 #[derive(Clone, Copy)]
@@ -79,8 +84,9 @@ impl Row {
         kind && (query.is_empty() || self.search.contains(query))
     }
 
-    // Lines of the list for this change: the coloured symbol and the key,
-    // the value below, and a small gap. Long texts go on several lines.
+    // Lines of the list for this change: some space, the coloured symbol and
+    // the key, the value below, more space and a separator. Long texts go on
+    // several lines.
     pub(super) fn lines(&self, fit: &Fit) -> Vec<String> {
         let (symbol, color) = match self.kind {
             Kind::Added => ("+", theme::SUCCESS),
@@ -88,7 +94,7 @@ impl Row {
             Kind::Modified => ("~", theme::WARNING),
         };
 
-        let mut lines = Vec::new();
+        let mut lines = vec![space(AROUND)];
 
         for (i, part) in wrap(&self.key, fit.key).iter().enumerate() {
             let symbol = if i == 0 {
@@ -100,11 +106,14 @@ impl Row {
             lines.push(format!("{symbol}\t{}{part}", style(theme::TEXT_SECONDARY, KEY_SIZE)));
         }
 
+        lines.push(space(BETWEEN));
+
         for part in wrap(&self.text, fit.value) {
             lines.push(format!("\t{}{part}", style(theme::TEXT, VALUE_SIZE)));
         }
 
-        lines.push(gap());
+        lines.push(space(AROUND));
+        lines.push(separator());
         lines
     }
 }
@@ -161,9 +170,15 @@ fn style(color: Color, size: i32) -> String {
 }
 
 
-// A short empty line between two changes.
-fn gap() -> String {
-    format!("{FORMAT}S4{FORMAT}.")
+// A horizontal line between two changes.
+// An empty line of the given font size, used as vertical space.
+fn space(size: i32) -> String {
+    format!("{FORMAT}S{size}{FORMAT}.")
+}
+
+
+fn separator() -> String {
+    format!("{FORMAT}S8{FORMAT}-")
 }
 
 

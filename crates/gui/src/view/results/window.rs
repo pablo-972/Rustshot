@@ -18,10 +18,12 @@ use super::layout::{
     WIDTH,
 };
 use super::rows::{FORMAT, Fit, Row, empty, rows};
-use crate::theme;
+use crate::{system_theme, theme};
+use crate::view::icons;
 use crate::types::{DiffResult, Filter, Message};
 use crate::view::format::{file_name, format_count};
-use crate::view::widgets::{button, field, style_chip};
+use crate::view::search_field::search_field;
+use crate::view::widgets::{button, style_chip};
 
 
 // The filters, in the order of their buttons.
@@ -53,6 +55,7 @@ impl ResultsWindow {
             .with_label("Results")
             .center_screen();
         window.set_color(theme::BACKGROUND);
+        window.set_icon(icons::app());
         window.make_resizable(true);
 
         let chips = FILTERS
@@ -67,8 +70,12 @@ impl ResultsWindow {
             })
             .collect();
 
-        let mut search = field(MARGIN, SEARCH_TOP, WIDTH - 2 * MARGIN);
-        search.set_tooltip("Filter by key, value name or data");
+        let mut search = search_field(
+            MARGIN,
+            SEARCH_TOP,
+            WIDTH - 2 * MARGIN,
+            "Filter by key, value name or data"
+        );
         search.set_trigger(CallbackTrigger::Changed);
         search.emit(sender, Message::Refresh);
 
@@ -156,6 +163,9 @@ impl ResultsWindow {
 
     pub(crate) fn show(&mut self) {
         self.window.show();
+
+        // Hiding the window destroys it in Windows, so each show needs it.
+        system_theme::dark_title_bar(self.window.raw_handle());
     }
 
     pub(crate) fn hide(&mut self) {

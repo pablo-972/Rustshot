@@ -39,7 +39,8 @@ pub(super) fn update(
         Message::Shoot(step) => actions::shoot(state, windows, step, sender),
         Message::Compare => actions::compare(state, windows, sender),
         Message::ViewResults => actions::view_results(state, windows),
-        Message::OpenDiff => actions::open_diff(state, &windows.capture, sender),
+        Message::OpenShot(step) => actions::open_shot(state, windows, step, sender),
+        Message::OpenDiff => actions::open_diff(state, windows, sender),
 
         Message::Clear => {
             *state = ready();
@@ -49,23 +50,26 @@ pub(super) fn update(
         Message::Filter(filter) => windows.results.set_filter(filter),
         Message::Refresh => windows.results.render(),
 
-        Message::ShotDone(step, result) => shot_done(state, step, result),
+        Message::ShotDone(step, result) => shot_done(state, step, result, "Saved"),
+        Message::ShotOpened(step, result) => shot_done(state, step, result, "Opened"),
         Message::CompareDone(result) => compare_done(state, result),
         Message::DiffOpened(result) => diff_opened(state, windows, result),
     }
 }
 
 
+// A shot taken or opened: `action` says which, for the status bar.
 fn shot_done(
     state: &mut State,
     step: Step,
-    result: Result<Shot, String>
+    result: Result<Shot, String>,
+    action: &str
 ) {
     state.busy = None;
 
     match result {
         Ok(shot) => {
-            state.status = info(&format!("Saved {}", file_name(&shot.path)));
+            state.status = info(&format!("{action} {}", file_name(&shot.path)));
 
             match step {
                 Step::First => state.first = Some(shot),

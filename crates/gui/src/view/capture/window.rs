@@ -14,10 +14,12 @@ use super::layout::{
     MARGIN,
     ROW_HEIGHT,
     ROW_TOP,
+    SEPARATOR_TOP,
     WIDTH,
 };
 use super::step_row::{StepRow, StepView};
-use crate::theme;
+use crate::{system_theme, theme};
+use crate::view::icons;
 use crate::types::{
     DiffResult,
     Message,
@@ -47,7 +49,6 @@ pub(crate) struct CaptureWindow {
     diff: StepRow,
     results: Button,
     status: Frame,
-    open: Button,
     clear: Button,
 }
 
@@ -59,6 +60,7 @@ impl CaptureWindow {
             .with_label("Rustshot")
             .center_screen();
         window.set_color(theme::BACKGROUND);
+        window.set_icon(icons::app());
 
         // Closing this window closes the results window too.
         window.set_callback(|_| app::quit());
@@ -70,11 +72,15 @@ impl CaptureWindow {
         let mut browse = button(BUTTON_X, 34, BUTTON_WIDTH, "Browse…");
         browse.emit(sender, Message::Browse);
 
+        // Line between the output folder and the steps.
+        separator(MARGIN, SEPARATOR_TOP, WIDTH - 2 * MARGIN);
+
         let mut first = StepRow::new(
             0,
             "First shot name",
             "before.json",
-            "Clean system, before running the sample",
+            sender,
+            Message::OpenShot(Step::First)
         );
         first.button.emit(sender, Message::Shoot(Step::First));
 
@@ -82,7 +88,8 @@ impl CaptureWindow {
             1,
             "Second shot name",
             "after.json",
-            "Take the first shot to enable this step",
+            sender,
+            Message::OpenShot(Step::Second)
         );
         second.button.emit(sender, Message::Shoot(Step::Second));
 
@@ -90,18 +97,25 @@ impl CaptureWindow {
             2,
             "Diff name",
             "diff.json",
-            "Needs both shots"
+            sender,
+            Message::OpenDiff
         );
         diff.button.emit(sender, Message::Compare);
 
         let results_top = ROW_TOP + 2 * ROW_HEIGHT + 66;
-        let mut results = button(BUTTON_X, results_top, BUTTON_WIDTH, "View results");
+        let mut results = button(
+            BUTTON_X, 
+            results_top, 
+            BUTTON_WIDTH, 
+            "View results"
+        );
         results.emit(sender, Message::ViewResults);
 
-        let (status, open, clear) = footer(sender);
+        let (status, clear) = footer(sender);
 
         window.end();
         window.show();
+        system_theme::dark_title_bar(window.raw_handle());
 
         CaptureWindow {
             window,
@@ -112,7 +126,6 @@ impl CaptureWindow {
             diff,
             results,
             status,
-            open,
             clear,
         }
     }
@@ -136,6 +149,18 @@ impl CaptureWindow {
         self.diff.name()
     }
 
+    // Shows the name of a file opened instead of taken.
+    pub(crate) fn set_shot_name(&mut self, step: Step, name: &str) {
+        match step {
+            Step::First => self.first.set_name(name),
+            Step::Second => self.second.set_name(name),
+        }
+    }
+
+    pub(crate) fn set_diff_name(&mut self, name: &str) {
+        self.diff.set_name(name);
+    }
+
     // The three file names, to check that they are different.
     pub(crate) fn names(&self) -> [String; 3] {
         [self.first.name(), self.second.name(), self.diff.name()]
@@ -149,35 +174,29 @@ impl CaptureWindow {
 
         set_enabled(&mut self.output, idle);
         set_enabled(&mut self.browse, idle);
-        set_enabled(&mut self.open, idle);
         set_enabled(&mut self.clear, idle);
 
         self.first.render(StepView {
             enabled: idle,
+            openable: idle,
             primary: !first_done,
-            running: state.busy == Some(Task::Shoot(Step::First)),
+            running: running(state, Step::First),
             label: if first_done { "Retake 1st shot" } else { "Take 1st shot" },
             done: state.first.as_ref().map(shot_info),
         });
 
-        self.second.hint = if first_done {
-            "Run the sample, then take this shot"
-        } else {
-            "Take the first shot to enable this step"
-        };
-
         self.second.render(StepView {
             enabled: idle && first_done,
+            openable: idle && first_done,
             primary: first_done && state.second.is_none(),
-            running: state.busy == Some(Task::Shoot(Step::Second)),
+            running: running(state, Step::Second),
             label: if state.second.is_some() { "Retake 2nd shot" } else { "Take 2nd shot" },
             done: state.second.as_ref().map(shot_info),
         });
 
-        self.diff.hint = if both_done { "Ready to compare" } else { "Needs both shots" };
-
         self.diff.render(StepView {
             enabled: idle && both_done,
+            openable: idle,
             primary: both_done && !has_diff,
             running: matches!(state.busy, Some(Task::Compare | Task::OpenDiff)),
             label: "Compare",
@@ -199,27 +218,36 @@ impl CaptureWindow {
 }
 
 
-// Bottom bar: status text, Open diff and Clear.
-fn footer(sender: Sender<Message>) -> (Frame, Button, Button) {
-    let mut background = Frame::new(0, FOOTER_TOP, WIDTH, HEIGHT - FOOTER_TOP, None);
+// Bottom bar: status text and Clear.
+fn footer(sender: Sender<Message>) -> (Frame, Button) {
+    let mut background = Frame::new(
+        0, 
+        FOOTER_TOP, 
+        WIDTH, HEIGHT - 
+        FOOTER_TOP, 
+        None
+    );
     background.set_frame(FrameType::FlatBox);
     background.set_color(theme::FOOTER);
+
     separator(0, FOOTER_TOP, WIDTH);
+    let status = line(MARGIN, FOOTER_TOP + 8, BUTTON_X - MARGIN - 10, 30);
 
-    let status = line(MARGIN, FOOTER_TOP + 8, 240, 30);
-
-    let mut open = button(
-        BUTTON_X - BUTTON_WIDTH - 10,
-        FOOTER_TOP + 8,
-        BUTTON_WIDTH,
-        "Open diff…"
+    let mut clear = button(
+        BUTTON_X, 
+        FOOTER_TOP + 8, 
+        BUTTON_WIDTH, 
+        "Clear"
     );
-    open.emit(sender, Message::OpenDiff);
-
-    let mut clear = button(BUTTON_X, FOOTER_TOP + 8, BUTTON_WIDTH, "Clear");
     clear.emit(sender, Message::Clear);
 
-    (status, open, clear)
+    (status, clear)
+}
+
+
+// A shot is running while it is taken or opened.
+fn running(state: &State, step: Step) -> bool {
+    state.busy == Some(Task::Shoot(step)) || state.busy == Some(Task::OpenShot(step))
 }
 
 

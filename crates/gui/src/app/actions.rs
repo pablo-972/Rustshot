@@ -11,7 +11,7 @@ use crate::types::{
     Step,
     Task,
 };
-use crate::view::{CaptureWindow, Windows};
+use crate::view::{CaptureWindow, Windows, file_name};
 
 
 pub(super) fn browse(capture: &mut CaptureWindow) {
@@ -90,14 +90,43 @@ pub(super) fn view_results(state: &State, windows: &mut Windows) {
 }
 
 
-pub(super) fn open_diff(
+// Uses a snapshot saved before instead of taking it again.
+pub(super) fn open_shot(
     state: &mut State,
-    capture: &CaptureWindow,
+    windows: &mut Windows,
+    step: Step,
     sender: Sender<Message>
 ) {
-    let Some(path) = choose(NativeFileChooserType::BrowseFile, &capture.output()) else {
+    let Some(path) = choose(NativeFileChooserType::BrowseFile, &windows.capture.output()) else {
         return;
     };
+
+    windows.capture.set_shot_name(step, &file_name(&path));
+
+    // Like a new shot, it makes the later steps outdated.
+    if step == Step::First {
+        state.second = None;
+    }
+    state.diff = None;
+    windows.results.hide();
+
+    state.busy = Some(Task::OpenShot(step));
+    state.status = info("Opening…");
+
+    tasks::open_shot(step, path, sender);
+}
+
+
+pub(super) fn open_diff(
+    state: &mut State,
+    windows: &mut Windows,
+    sender: Sender<Message>
+) {
+    let Some(path) = choose(NativeFileChooserType::BrowseFile, &windows.capture.output()) else {
+        return;
+    };
+
+    windows.capture.set_diff_name(&file_name(&path));
 
     state.busy = Some(Task::OpenDiff);
     state.status = info("Opening…");

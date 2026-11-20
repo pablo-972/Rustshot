@@ -9,3 +9,4 @@ edition = "2024"
 anyhow.workspace = true
 fltk.workspace = true
 kernel.workspace = true
+winreg.workspace = true

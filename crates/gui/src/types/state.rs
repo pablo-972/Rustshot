@@ -27,6 +27,7 @@ pub(crate) enum Step {
 )]
 pub(crate) enum Task {
     Shoot(Step),
+    OpenShot(Step),
     Compare,
     OpenDiff,
 }

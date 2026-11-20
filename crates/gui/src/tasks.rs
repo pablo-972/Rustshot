@@ -38,6 +38,21 @@ pub(crate) fn compare(
 }
 
 
+pub(crate) fn open_shot(
+    step: Step,
+    path: PathBuf,
+    sender: Sender<Message>
+) {
+    thread::spawn(move || {
+        let result = snapshot::load(&path)
+            .map(|snap| Shot { snapshot: Arc::new(snap), path })
+            .map_err(|e| describe(&e));
+
+        sender.send(Message::ShotOpened(step, result));
+    });
+}
+
+
 pub(crate) fn open_diff(path: PathBuf, sender: Sender<Message>) {
     thread::spawn(move || {
         let result = snapshot::load(&path)

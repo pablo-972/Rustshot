@@ -6,6 +6,7 @@
 
 mod app;
 mod console;
+mod system_theme;
 mod tasks;
 mod theme;
 mod types;

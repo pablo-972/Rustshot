@@ -1,4 +1,4 @@
-pub(super) const WIDTH: i32 = 820;
+pub(super) const WIDTH: i32 = 960;
 pub(super) const HEIGHT: i32 = 540;
 pub(super) const MARGIN: i32 = 12;
 

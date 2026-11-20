@@ -12,6 +12,9 @@ kernel = { path = "crates/kernel" }
 [target.'cfg(windows)'.dependencies]
 gui = { path = "crates/gui" }
 
+[build-dependencies]
+embed-resource = "3.0"
+
 [workspace]
 members = [
     "crates/cli",

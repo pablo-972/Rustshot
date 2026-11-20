@@ -10,6 +10,7 @@ pub(crate) enum Message {
     Shoot(Step),
     Compare,
     ViewResults,
+    OpenShot(Step),
     OpenDiff,
     Clear,
 
@@ -20,6 +21,7 @@ pub(crate) enum Message {
 
     // Background tasks. Errors come as text: the message must be Clone.
     ShotDone(Step, Result<Shot, String>),
+    ShotOpened(Step, Result<Shot, String>),
     CompareDone(Result<DiffResult, String>),
     DiffOpened(Result<DiffResult, String>),
 }
