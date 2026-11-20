@@ -1,21 +1,19 @@
 use std::env;
 
-use crate::snapshot::types::{DeviceInfo, SystemInfo};
+use winreg::RegKey;
+use winreg::enums::{HKEY_LOCAL_MACHINE, KEY_READ};
+
+use crate::types::{DeviceInfo, SystemInfo};
 
 
 // Registry key where Windows keeps the details of the installed version.
-// It exists from Windows 7 on.
-#[cfg(windows)]
 const CURRENT_VERSION: &str = r"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
 
 
-#[cfg(windows)]
 pub(super) fn system() -> SystemInfo {
     let key = VersionKey::open();
 
     SystemInfo {
-        // On Windows 11 this still says "Windows 10": the build (22000 or
-        // higher) tells them apart.
         name: key.text("ProductName"),
         version: version(&key),
         release: key.text("DisplayVersion").or_else(|| key.text("ReleaseId")),
@@ -27,37 +25,21 @@ pub(super) fn system() -> SystemInfo {
 }
 
 
-// Capture only runs on Windows: elsewhere only the basics are filled in.
-#[cfg(not(windows))]
-pub(super) fn system() -> SystemInfo {
-    SystemInfo {
-        name: Some(env::consts::OS.to_string()),
-        architecture: Some(env::consts::ARCH.to_string()),
-        ..SystemInfo::default()
-    }
-}
-
-
 pub(super) fn device() -> DeviceInfo {
     DeviceInfo {
-        hostname: variable("COMPUTERNAME").or_else(|| variable("HOSTNAME")),
-        user: variable("USERNAME").or_else(|| variable("USER")),
+        hostname: variable("COMPUTERNAME"),
+        user: variable("USERNAME"),
         domain: variable("USERDOMAIN"),
     }
 }
 
 
 // The CurrentVersion key. If it cannot be opened, every value reads as None.
-#[cfg(windows)]
-struct VersionKey(Option<winreg::RegKey>);
+struct VersionKey(Option<RegKey>);
 
 
-#[cfg(windows)]
 impl VersionKey {
     fn open() -> Self {
-        use winreg::RegKey;
-        use winreg::enums::{HKEY_LOCAL_MACHINE, KEY_READ};
-
         let key = RegKey::predef(HKEY_LOCAL_MACHINE)
             .open_subkey_with_flags(CURRENT_VERSION, KEY_READ)
             .ok();
@@ -75,9 +57,6 @@ impl VersionKey {
 }
 
 
-// Kernel version, for example "6.1". Windows 10 and later keep it in two
-// numbers and leave CurrentVersion at "6.3" for compatibility.
-#[cfg(windows)]
 fn version(key: &VersionKey) -> Option<String> {
     let major = key.number("CurrentMajorVersionNumber");
     let minor = key.number("CurrentMinorVersionNumber");
@@ -89,9 +68,6 @@ fn version(key: &VersionKey) -> Option<String> {
 }
 
 
-// Build and revision, for example "7601.24544". UBR is the revision: the
-// number of the last cumulative update.
-#[cfg(windows)]
 fn build(key: &VersionKey) -> Option<String> {
     let build = key.text("CurrentBuildNumber")?;
 
@@ -105,7 +81,6 @@ fn build(key: &VersionKey) -> Option<String> {
 // Architecture of the system, not of this program: a 32-bit program on
 // 64-bit Windows sees "x86" in PROCESSOR_ARCHITECTURE and the real one in
 // PROCESSOR_ARCHITEW6432.
-#[cfg(windows)]
 fn architecture() -> Option<String> {
     variable("PROCESSOR_ARCHITEW6432").or_else(|| variable("PROCESSOR_ARCHITECTURE"))
 }

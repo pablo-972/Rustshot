@@ -4,7 +4,7 @@ use std::sync::Arc;
 use std::thread;
 
 use fltk::app::Sender;
-use kernel::snapshot::{self, Snapshot, SnapshotError};
+use kernel::{Snapshot, SnapshotError};
 
 use crate::types::{DiffResult, Message, Shot, Step};
 
@@ -28,8 +28,8 @@ pub(crate) fn compare(
     sender: Sender<Message>
 ) {
     thread::spawn(move || {
-        let diff = snapshot::compare(&before, &after);
-        let result = snapshot::save(&diff, &path)
+        let diff = kernel::compare(&before, &after);
+        let result = kernel::save(&diff, &path)
             .map(|()| DiffResult { diff: Arc::new(diff), path })
             .map_err(|e| describe(&e));
 
@@ -44,7 +44,7 @@ pub(crate) fn open_shot(
     sender: Sender<Message>
 ) {
     thread::spawn(move || {
-        let result = snapshot::load(&path)
+        let result = kernel::load(&path)
             .map(|snap| Shot { snapshot: Arc::new(snap), path })
             .map_err(|e| describe(&e));
 
@@ -55,7 +55,7 @@ pub(crate) fn open_shot(
 
 pub(crate) fn open_diff(path: PathBuf, sender: Sender<Message>) {
     thread::spawn(move || {
-        let result = snapshot::load(&path)
+        let result = kernel::load(&path)
             .map(|diff| DiffResult { diff: Arc::new(diff), path })
             .map_err(|e| describe(&e));
 
@@ -65,8 +65,8 @@ pub(crate) fn open_diff(path: PathBuf, sender: Sender<Message>) {
 
 
 fn take_shot(path: PathBuf) -> Result<Shot, SnapshotError> {
-    let snap = snapshot::shot()?;
-    snapshot::save(&snap, &path)?;
+    let snap = kernel::shot()?;
+    kernel::save(&snap, &path)?;
 
     Ok(Shot { snapshot: Arc::new(snap), path })
 }

@@ -1,37 +1,41 @@
 use std::collections::BTreeMap;
 
-use crate::snapshot::error::Result;
-use crate::snapshot::types::RegistryKey;
+use winreg::types::FromRegValue;
+use winreg::{RegKey, RegValue};
+use winreg::enums::{
+    HKEY_CLASSES_ROOT,
+    HKEY_CURRENT_USER,
+    HKEY_LOCAL_MACHINE,
+    HKEY_USERS,
+    KEY_READ,
+    REG_BINARY,
+    REG_DWORD,
+    REG_EXPAND_SZ,
+    REG_MULTI_SZ,
+    REG_QWORD,
+    REG_SZ,
+};
+
+use crate::error::Result;
+use crate::types::{RegistryKey, RegistryValue};
 
 
 // Roots captured: the whole registry, like Regshot.
 // HKCU is not listed: it is the current user's key inside HKU.
 // HKCR is not listed: it is a merged view of HKLM\SOFTWARE\Classes and
 // HKCU\Software\Classes, both already captured.
-#[cfg(windows)]
 const ROOTS: [&str; 2] = ["HKLM", "HKU"];
 
 
-#[cfg(windows)]
 pub(crate) fn capture() -> Result<BTreeMap<String, RegistryKey>> {
     let mut keys = BTreeMap::new();
     for root in ROOTS { capture_root(root, &mut keys); }
-    
+
     Ok(keys)
 }
 
 
-#[cfg(windows)]
 fn capture_root(root: &str, out: &mut BTreeMap<String, RegistryKey>) {
-    use winreg::RegKey;
-    use winreg::enums::{
-        HKEY_CLASSES_ROOT,
-        HKEY_CURRENT_USER,
-        HKEY_LOCAL_MACHINE,
-        HKEY_USERS,
-        KEY_READ,
-    };
-
     let (hive_name, sub) = root.split_once('\\').unwrap_or((root, ""));
     let hive = match hive_name {
         "HKLM" => HKEY_LOCAL_MACHINE,
@@ -48,14 +52,11 @@ fn capture_root(root: &str, out: &mut BTreeMap<String, RegistryKey>) {
 }
 
 
-#[cfg(windows)]
 fn walk(
-    key: &winreg::RegKey,
+    key: &RegKey,
     path: String,
     out: &mut BTreeMap<String, RegistryKey>
 ) {
-    use winreg::enums::KEY_READ;
-
     let values = key
         .enum_values()
         .flatten()
@@ -72,19 +73,7 @@ fn walk(
 }
 
 
-#[cfg(windows)]
-fn convert(value: &winreg::RegValue) -> crate::snapshot::types::RegistryValue {
-    use crate::snapshot::types::RegistryValue;
-    use winreg::types::FromRegValue;
-    use winreg::enums::{
-        REG_BINARY,
-        REG_DWORD,
-        REG_EXPAND_SZ,
-        REG_MULTI_SZ,
-        REG_QWORD,
-        REG_SZ,
-    };
-
+fn convert(value: &RegValue) -> RegistryValue {
     let typed = match value.vtype {
         REG_SZ => String::from_reg_value(value).ok().map(RegistryValue::Sz),
         REG_EXPAND_SZ => String::from_reg_value(value).ok().map(RegistryValue::ExpandSz),
@@ -101,9 +90,3 @@ fn convert(value: &winreg::RegValue) -> crate::snapshot::types::RegistryValue {
     })
 }
 
-
-// The registry only exists on Windows.
-#[cfg(not(windows))]
-pub(crate) fn capture() -> Result<BTreeMap<String, RegistryKey>> {
-    Ok(BTreeMap::new())
-}

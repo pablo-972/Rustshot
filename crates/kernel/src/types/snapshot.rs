@@ -84,7 +84,6 @@ pub struct SystemInfo {
 pub struct DeviceInfo {
     pub hostname: Option<String>,
     pub user: Option<String>,
-    /// Domain of the user, or the machine name if it is a local account.
     pub domain: Option<String>,
 }
 

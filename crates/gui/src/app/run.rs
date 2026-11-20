@@ -3,13 +3,11 @@ use std::env;
 use fltk::app::{self, App, Scheme};
 
 use super::update::{ready, update};
+use crate::theme;
 use crate::view::Windows;
-use crate::{console, theme};
 
 
 pub fn run() -> anyhow::Result<()> {
-    console::detach();
-
     let app = App::default().with_scheme(Scheme::Base);
     theme::apply();
 

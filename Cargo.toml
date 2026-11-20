@@ -6,11 +6,8 @@ edition = "2024"
 [dependencies]
 anyhow = "1.0"
 cli = { path = "crates/cli" }
-kernel = { path = "crates/kernel" }
-
-# The graphical interface only exists on Windows.
-[target.'cfg(windows)'.dependencies]
 gui = { path = "crates/gui" }
+kernel = { path = "crates/kernel" }
 
 [build-dependencies]
 embed-resource = "3.0"

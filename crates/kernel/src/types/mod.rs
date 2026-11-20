@@ -14,7 +14,10 @@ pub use snapshot::{
     SystemInfo,
     DeviceInfo,
 };
-pub use registry::{RegistryKey, RegistryValue};
+pub use registry::{
+    RegistryKey, 
+    RegistryValue
+};
 pub use diff::{
     SnapshotDiff,
     DiffMeta,

@@ -1,8 +1,8 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use super::{registry, system};
-use crate::snapshot::error::Result;
-use crate::snapshot::types::{
+use crate::error::Result;
+use crate::types::{
     Snapshot,
     SnapshotData,
     SnapshotMeta,

@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use kernel::snapshot::{Snapshot, SnapshotDiff};
+use kernel::{Snapshot, SnapshotDiff};
 
 
 #[derive(

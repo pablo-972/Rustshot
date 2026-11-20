@@ -3,9 +3,7 @@ name = "gui"
 version = "0.1.0"
 edition = "2024"
 
-# The graphical interface only exists on Windows: on other systems the crate
-# is empty, so the workspace still builds on Linux.
-[target.'cfg(windows)'.dependencies]
+[dependencies]
 anyhow.workspace = true
 fltk.workspace = true
 kernel.workspace = true

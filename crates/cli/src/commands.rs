@@ -1,13 +1,10 @@
 use std::path::Path;
+
 use anyhow::Result;
-
 use clap::Parser;
-
-use kernel::snapshot;
 
 use crate::arguments::Cli;
 use crate::arguments::Command;
-
 
 
 pub fn run() -> Result<()> {
@@ -25,10 +22,9 @@ fn execute(cli: Cli) -> Result<()> {
     }
 }
 
-
 fn run_shot(output: &Path) -> Result<()> {
-    let snap = snapshot::shot()?;
-    snapshot::save(&snap, output)?;
+    let snap = kernel::shot()?;
+    kernel::save(&snap, output)?;
     
     let summary = &snap.summary;
 
@@ -42,17 +38,16 @@ fn run_shot(output: &Path) -> Result<()> {
     Ok(())
 }
 
-
 fn run_compare(
     before: &Path,
     after: &Path,
     output: &Path
 ) -> Result<()> {
-    let before = snapshot::load(before)?;
-    let after = snapshot::load(after)?;
+    let before = kernel::load(before)?;
+    let after = kernel::load(after)?;
 
-    let diff = snapshot::compare(&before, &after);
-    snapshot::save(&diff, output)?;
+    let diff = kernel::compare(&before, &after);
+    kernel::save(&diff, output)?;
 
     eprintln!("Keys added:      {}", diff.summary.registry.keys_added);
     eprintln!("Keys deleted:    {}", diff.summary.registry.keys_deleted);
@@ -63,7 +58,6 @@ fn run_compare(
 
     Ok(())
 }
-
 
 fn banner() {
     println!(

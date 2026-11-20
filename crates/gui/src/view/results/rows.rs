@@ -1,6 +1,6 @@
 use fltk::draw;
 use fltk::enums::Color;
-use kernel::snapshot::{RegistryValue, SnapshotDiff};
+use kernel::{RegistryValue, SnapshotDiff};
 
 use crate::theme;
 use crate::types::Filter;

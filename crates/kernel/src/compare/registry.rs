@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use super::diff::union;
-use crate::snapshot::types::{
+use crate::types::{
     RegistryDiff,
     RegistryKey,
     ValueChange,
@@ -48,7 +48,6 @@ fn compare_values(
 ) {
     for name in union(&old.values, &new.values) {
         match (old.values.get(name), new.values.get(name)) {
-
             (Some(value), None) => diff.values_deleted.push(ValueEntry {
                 key: path.to_string(),
                 name: name.clone(),

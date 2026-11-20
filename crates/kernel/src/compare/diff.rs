@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use super::registry;
-use crate::snapshot::types::{
+use crate::types::{
     Snapshot,
     SnapshotDiff,
     DiffChanges,

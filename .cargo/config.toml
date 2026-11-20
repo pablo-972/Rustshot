@@ -7,6 +7,11 @@
 # Use the build that matches the architecture of the VM: a 32-bit process on
 # 64-bit Windows sees the registry redirected to Wow6432Node.
 
+# Rustshot only runs on Windows: every build is for Windows, also the ones
+# for checking the code (cargo build, cargo clippy, rust-analyzer).
+[build]
+target = "x86_64-pc-windows-gnu"
+
 # Static linking: the C runtime and the MinGW libraries go inside the .exe,
 # so it is a single file with no extra DLLs.
 [target.x86_64-win7-windows-gnu]

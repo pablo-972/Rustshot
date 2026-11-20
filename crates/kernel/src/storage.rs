@@ -1,11 +1,11 @@
 use std::fs;
-use std::path::{Path};
+use std::path::Path;
 
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use serde_json::{from_slice, to_vec_pretty};
 
-use super::error::{Result, SnapshotError};
+use crate::error::{Result, SnapshotError};
 
 
 pub fn save<T: Serialize>(value: &T, path: &Path) -> Result<()> {
@@ -18,7 +18,6 @@ pub fn save<T: Serialize>(value: &T, path: &Path) -> Result<()> {
     }
 
     let json = to_vec_pretty(value).map_err(SnapshotError::Serialize)?;
-
     fs::write(path, json).map_err(|source| SnapshotError::Write {
         path: path.to_path_buf(),
         source,

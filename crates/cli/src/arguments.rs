@@ -11,6 +11,7 @@ pub struct Cli {
     pub command: Command
 }
 
+
 #[derive(Debug, Subcommand)]
 pub enum Command {     
     /// Take a snapshot of the system state
