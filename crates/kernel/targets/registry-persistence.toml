@@ -1,0 +1,103 @@
+# Registry keys to capture. Each key is walked recursively.
+# `os` omitted = applies to all Windows versions.
+# Valid `os` values: "win7", "win8", "win10", "win11"
+
+# --- Autostart ---
+[[registry]]
+key = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run'
+description = "Autostart (machine)"
+
+[[registry]]
+key = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce'
+description = "Autostart, run once (machine)"
+
+[[registry]]
+key = 'HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run'
+description = "Autostart (user)"
+
+[[registry]]
+key = 'HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce'
+description = "Autostart, run once (user)"
+
+[[registry]]
+key = 'HKLM\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Run'
+description = "Autostart, 32-bit apps on 64-bit systems"
+
+[[registry]]
+key = 'HKLM\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\RunOnce'
+description = "Autostart, run once, 32-bit apps on 64-bit systems"
+
+[[registry]]
+key = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run'
+description = "Autostart via policy (machine)"
+
+[[registry]]
+key = 'HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run'
+description = "Autostart via policy (user)"
+
+[[registry]]
+key = 'HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
+description = "Startup folder path"
+
+[[registry]]
+key = 'HKLM\SOFTWARE\Microsoft\Active Setup\Installed Components'
+description = "Active Setup (runs at first logon)"
+
+# --- Services and tasks ---
+[[registry]]
+key = 'HKLM\SYSTEM\CurrentControlSet\Services'
+description = "Services and drivers"
+
+[[registry]]
+key = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree'
+description = "Scheduled tasks"
+
+# --- Logon and execution hijacking ---
+[[registry]]
+key = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
+description = "Shell and Userinit"
+
+[[registry]]
+key = 'HKCU\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
+description = "Winlogon (user)"
+
+[[registry]]
+key = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options'
+description = "Per-executable debugger (IFEO)"
+
+[[registry]]
+key = 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Windows'
+description = "AppInit_DLLs"
+
+[[registry]]
+key = 'HKLM\SYSTEM\CurrentControlSet\Control\Session Manager'
+description = "BootExecute and KnownDLLs"
+
+[[registry]]
+key = 'HKLM\SYSTEM\CurrentControlSet\Control\Lsa'
+description = "Security and authentication packages"
+
+[[registry]]
+key = 'HKLM\SOFTWARE\Classes\exefile\shell\open\command'
+description = ".exe file association"
+
+# --- Explorer / browser ---
+[[registry]]
+key = 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects'
+description = "Browser Helper Objects"
+
+# --- Antivirus exclusions (differ by version) ---
+[[registry]]
+key = 'HKLM\SOFTWARE\Microsoft\Microsoft Antimalware\Exclusions'
+description = "Security Essentials exclusions"
+os = ["win7"]
+
+[[registry]]
+key = 'HKLM\SOFTWARE\Microsoft\Windows Defender\Exclusions'
+description = "Defender exclusions"
+os = ["win8", "win10", "win11"]
+
+[[registry]]
+key = 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender'
+description = "Defender policies"
+os = ["win8", "win10", "win11"]

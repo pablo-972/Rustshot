@@ -1,0 +1,54 @@
+# Files and folders to capture on Windows.
+# Environment variables (%NAME%) are expanded when capturing.
+#
+# recursive: also walk the subfolders (default: false)
+# hash:      compute the SHA-256 of each file (default: true)
+
+# --- Autostart ---
+[[files]]
+path = '%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup'
+description = "Startup folder (user)"
+recursive = true
+
+[[files]]
+path = '%ProgramData%\Microsoft\Windows\Start Menu\Programs\StartUp'
+description = "Startup folder (all users)"
+recursive = true
+
+# --- Scheduled tasks ---
+[[files]]
+path = '%SystemRoot%\System32\Tasks'
+description = "Scheduled task definitions"
+recursive = true
+
+# --- Network ---
+[[files]]
+path = '%SystemRoot%\System32\drivers\etc\hosts'
+description = "Hosts file"
+
+# --- Dropped binaries ---
+[[files]]
+path = '%SystemRoot%\System32'
+description = "New system binaries, first level only"
+hash = false
+
+[[files]]
+path = '%SystemRoot%\SysWOW64'
+description = "New 32-bit system binaries, first level only"
+hash = false
+
+[[files]]
+path = '%TEMP%'
+description = "Temporary files of the user, first level only"
+
+[[files]]
+path = '%APPDATA%'
+description = "New folders in AppData\\Roaming"
+
+[[files]]
+path = '%LOCALAPPDATA%'
+description = "New folders in AppData\\Local"
+
+[[files]]
+path = '%ProgramData%'
+description = "New folders in ProgramData"

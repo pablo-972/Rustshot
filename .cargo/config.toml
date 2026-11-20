@@ -1,0 +1,38 @@
+# Build settings for Windows 7, cross-compiled from Linux.
+# The resulting .exe also runs on Windows 8, 10 and 11.
+#
+#   64-bit: cargo +nightly build -Zbuild-std --target x86_64-win7-windows-gnu --release
+#   32-bit: cargo +nightly build -Zbuild-std --target i686-win7-windows-gnu --release
+#
+# Use the build that matches the architecture of the VM: a 32-bit process on
+# 64-bit Windows sees the registry redirected to Wow6432Node.
+
+# Static linking: the C runtime and the MinGW libraries go inside the .exe,
+# so it is a single file with no extra DLLs.
+[target.x86_64-win7-windows-gnu]
+rustflags = [
+    "-C",
+    "target-feature=+crt-static",
+    "-C",
+    "link-arg=-static",
+]
+
+[target.i686-win7-windows-gnu]
+rustflags = [
+    "-C",
+    "target-feature=+crt-static",
+    "-C",
+    "link-arg=-static",
+]
+
+# C/C++ compilers for the GUI (FLTK). The `cc` crate does not know the win7
+# targets, so it would pick the Linux compiler without these.
+[env]
+# 64-bit
+CC_x86_64_win7_windows_gnu = "x86_64-w64-mingw32-gcc"
+CXX_x86_64_win7_windows_gnu = "x86_64-w64-mingw32-g++"
+AR_x86_64_win7_windows_gnu = "x86_64-w64-mingw32-ar"
+# 32-bit
+CC_i686_win7_windows_gnu = "i686-w64-mingw32-gcc"
+CXX_i686_win7_windows_gnu = "i686-w64-mingw32-g++"
+AR_i686_win7_windows_gnu = "i686-w64-mingw32-ar"
