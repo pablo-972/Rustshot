@@ -33,11 +33,10 @@ fn run_shot(output: &Path) -> Result<()> {
     let summary = &snap.summary;
 
     eprintln!(
-        "Snapshot saved to {} ({} registry keys, {} values, {} files)",
+        "Snapshot saved to {} ({} registry keys, {} values)",
         output.display(),
         summary.registry_keys,
-        summary.registry_values,
-        summary.files
+        summary.registry_values
     );
 
     Ok(())
@@ -60,9 +59,6 @@ fn run_compare(
     eprintln!("Values added:    {}", diff.summary.registry.values_added);
     eprintln!("Values deleted:  {}", diff.summary.registry.values_deleted);
     eprintln!("Values modified: {}", diff.summary.registry.values_modified);
-    eprintln!("Files added:     {}", diff.summary.files.added);
-    eprintln!("Files deleted:   {}", diff.summary.files.deleted);
-    eprintln!("Files modified:  {}", diff.summary.files.modified);
     eprintln!("Diff saved to    {}", output.display());
 
     Ok(())

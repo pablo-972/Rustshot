@@ -6,9 +6,6 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum SnapshotError {
-    #[error("invalid registry configuration")]
-    Config(#[from] toml::de::Error),
-
     #[error("cannot read snapshot {}", path.display())]
     Read {path: PathBuf, #[source] source: io::Error},
 

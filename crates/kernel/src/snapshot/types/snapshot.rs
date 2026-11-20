@@ -3,11 +3,6 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 
 use super::registry::RegistryKey;
-use super::files::FileEntry;
-
-
-/// Version of the JSON format of snapshots and diffs.
-pub const FORMAT_VERSION: u32 = 1;
 
 
 #[derive(
@@ -34,10 +29,10 @@ pub struct Snapshot {
     Deserialize
 )]
 pub struct SnapshotMeta {
-    pub format: u32,
     /// Capture time, in seconds since the Unix epoch.
     pub created_at: u64,
-    pub system: System,
+    pub system: SystemInfo,
+    pub device: DeviceInfo,
 }
 
 
@@ -54,25 +49,53 @@ pub struct SnapshotData {
     /// Registry: key path -> (key -> (value name -> value))
     #[serde(default)]
     pub registry: BTreeMap<String, RegistryKey>,
-
-    /// Files by full path.
-    #[serde(default)]
-    pub files: BTreeMap<String, FileEntry>,
 }
 
 
+/// Operating system where the snapshot was taken.
+/// Fields are None when Windows does not provide them.
 #[derive(
     Debug,
     Clone,
-    Copy,
+    Default,
     PartialEq,
     Eq,
     Serialize,
     Deserialize
 )]
-#[serde(rename_all = "lowercase")]
-pub enum System {
-    Windows,
+pub struct SystemInfo {
+    /// For example "Windows 7 Professional".
+    pub name: Option<String>,
+    /// Kernel version, for example "6.1" or "10.0".
+    pub version: Option<String>,
+    /// Feature update, for example "22H2". Windows 10 and later only.
+    pub release: Option<String>,
+    /// Build and revision, for example "7601.24544".
+    pub build: Option<String>,
+    /// For example "Service Pack 1". Up to Windows 8.1 only.
+    pub service_pack: Option<String>,
+    /// For example "Professional".
+    pub edition: Option<String>,
+    /// Architecture of the system, for example "AMD64" or "x86".
+    pub architecture: Option<String>,
+}
+
+
+/// Machine and user that took the snapshot.
+#[derive(
+    Debug,
+    Clone,
+    Default,
+    PartialEq,
+    Eq,
+    Serialize,
+    Deserialize
+)]
+pub struct DeviceInfo {
+    pub hostname: Option<String>,
+    pub user: Option<String>,
+    /// Domain of the user, or the machine name if it is a local account.
+    pub domain: Option<String>,
 }
 
 
@@ -88,5 +111,4 @@ pub enum System {
 pub struct SnapshotSummary {
     pub registry_keys: usize,
     pub registry_values: usize,
-    pub files: usize,
 }

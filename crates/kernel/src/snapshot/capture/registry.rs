@@ -1,26 +1,22 @@
 use std::collections::BTreeMap;
 
-#[cfg(windows)]
-use crate::config;
 use crate::snapshot::error::Result;
 use crate::snapshot::types::RegistryKey;
 
 
-// The registry only exists on Windows.
-#[cfg(not(windows))]
-pub(crate) fn capture() -> Result<BTreeMap<String, RegistryKey>> {
-    Ok(BTreeMap::new())
-}
+// Roots captured: the whole registry, like Regshot.
+// HKCU is not listed: it is the current user's key inside HKU.
+// HKCR is not listed: it is a merged view of HKLM\SOFTWARE\Classes and
+// HKCU\Software\Classes, both already captured.
+#[cfg(windows)]
+const ROOTS: [&str; 2] = ["HKLM", "HKU"];
 
 
 #[cfg(windows)]
 pub(crate) fn capture() -> Result<BTreeMap<String, RegistryKey>> {
     let mut keys = BTreeMap::new();
-
-    for target in config::registry_targets()? {
-        capture_root(&target.key, &mut keys);
-    }
-
+    for root in ROOTS { capture_root(root, &mut keys); }
+    
     Ok(keys)
 }
 
@@ -103,4 +99,11 @@ fn convert(value: &winreg::RegValue) -> crate::snapshot::types::RegistryValue {
         kind: value.vtype.clone() as u32,
         bytes: value.bytes.to_vec(),
     })
+}
+
+
+// The registry only exists on Windows.
+#[cfg(not(windows))]
+pub(crate) fn capture() -> Result<BTreeMap<String, RegistryKey>> {
+    Ok(BTreeMap::new())
 }

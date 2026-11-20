@@ -1,38 +1,33 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use super::{files, registry};
+use super::registry;
 use crate::snapshot::types::{
-    FORMAT_VERSION,
     Snapshot,
     SnapshotDiff,
     DiffChanges,
     DiffMeta,
     DiffSummary,
     RegistryDiff,
-    FilesDiff,
     RegistryDiffSummary,
-    FilesDiffSummary
 };
 
 
 pub fn compare(before: &Snapshot, after: &Snapshot) -> SnapshotDiff {
     let registry = registry::compare(&before.data.registry, &after.data.registry);
-    let files = files::compare(&before.data.files, &after.data.files);
-    let summary = summarize(&registry, &files);
+    let summary = summarize(&registry);
 
     SnapshotDiff {
         meta: DiffMeta {
-            format: FORMAT_VERSION,
             before: before.meta.created_at,
             after: after.meta.created_at,
         },
         summary,
-        changes: DiffChanges { registry, files },
+        changes: DiffChanges { registry },
     }
 }
 
 
-fn summarize(registry: &RegistryDiff, files: &FilesDiff) -> DiffSummary {
+fn summarize(registry: &RegistryDiff) -> DiffSummary {
     let registry = RegistryDiffSummary {
         keys_added: registry.keys_added.len(),
         keys_deleted: registry.keys_deleted.len(),
@@ -41,22 +36,13 @@ fn summarize(registry: &RegistryDiff, files: &FilesDiff) -> DiffSummary {
         values_modified: registry.values_modified.len(),
     };
 
-    let files = FilesDiffSummary {
-        added: files.added.len(),
-        deleted: files.deleted.len(),
-        modified: files.modified.len(),
-    };
-    
     let total = registry.keys_added
         + registry.keys_deleted
         + registry.values_added
         + registry.values_deleted
-        + registry.values_modified
-        + files.added
-        + files.deleted
-        + files.modified;
+        + registry.values_modified;
 
-    DiffSummary { registry, files, total }
+    DiffSummary { registry, total }
 }
 
 

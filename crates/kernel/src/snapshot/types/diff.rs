@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 
 use super::registry::RegistryValue;
-use super::files::FileEntry;
 
 
 #[derive(
@@ -30,7 +29,6 @@ pub struct SnapshotDiff {
     Deserialize
 )]
 pub struct DiffMeta {
-    pub format: u32,
     /// Capture time of the first snapshot.
     pub before: u64,
     /// Capture time of the second snapshot.
@@ -49,7 +47,6 @@ pub struct DiffMeta {
 )]
 pub struct DiffChanges {
     pub registry: RegistryDiff,
-    pub files: FilesDiff,
 }
 
 
@@ -64,7 +61,6 @@ pub struct DiffChanges {
 )]
 pub struct DiffSummary {
     pub registry: RegistryDiffSummary,
-    pub files: FilesDiffSummary,
     pub total: usize,
 }
 
@@ -96,44 +92,12 @@ pub struct RegistryDiffSummary {
     Serialize, 
     Deserialize
 )]
-pub struct FilesDiffSummary {
-    pub added: usize,
-    pub deleted: usize,
-    pub modified: usize,
-}
-
-
-#[derive(
-    Debug, 
-    Clone, 
-    Default, 
-    PartialEq, 
-    Eq, 
-    Serialize, 
-    Deserialize
-)]
 pub struct RegistryDiff {
     pub keys_added: Vec<String>,
     pub keys_deleted: Vec<String>,
     pub values_added: Vec<ValueEntry>,
     pub values_deleted: Vec<ValueEntry>,
     pub values_modified: Vec<ValueChange>,
-}
-
-
-#[derive(
-    Debug, 
-    Clone, 
-    Default, 
-    PartialEq, 
-    Eq, 
-    Serialize, 
-    Deserialize
-)]
-pub struct FilesDiff {
-    pub added: Vec<FileItem>,
-    pub deleted: Vec<FileItem>,
-    pub modified: Vec<FileChange>,
 }
 
 
@@ -165,33 +129,4 @@ pub struct ValueChange {
     pub name: String,
     pub before: RegistryValue,
     pub after: RegistryValue,
-}
-
-
-#[derive(
-    Debug, 
-    Clone, 
-    PartialEq, 
-    Eq, 
-    Serialize, 
-    Deserialize
-)]
-pub struct FileItem {
-    pub path: String,
-    pub entry: FileEntry,
-}
-
-
-#[derive(
-    Debug, 
-    Clone, 
-    PartialEq, 
-    Eq, 
-    Serialize, 
-    Deserialize
-)]
-pub struct FileChange {
-    pub path: String,
-    pub before: FileEntry,
-    pub after: FileEntry,
 }
