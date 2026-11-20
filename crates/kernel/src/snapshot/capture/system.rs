@@ -1,5 +1,3 @@
-//! Operating system and device of the machine where the snapshot is taken.
-
 use std::env;
 
 use crate::snapshot::types::{DeviceInfo, SystemInfo};
