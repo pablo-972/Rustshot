@@ -8,10 +8,15 @@ anyhow = "1.0"
 cli = { path = "crates/cli" }
 kernel = { path = "crates/kernel" }
 
+# The graphical interface only exists on Windows.
+[target.'cfg(windows)'.dependencies]
+gui = { path = "crates/gui" }
+
 [workspace]
 members = [
     "crates/cli",
-    "crates/kernel"
+    "crates/gui",
+    "crates/kernel",
 ]
 resolver = "3"
 
@@ -21,5 +26,6 @@ thiserror = "2.0"
 serde_json = "1.0"
 winreg = "0.56.0"
 clap = { version = "4.0", features = ["derive"] }
+fltk = "1.5"
 serde = { version = "1.0.229", features = ["derive"] }
 kernel = { path = "crates/kernel" }

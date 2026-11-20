@@ -2,10 +2,10 @@ use std::fs;
 use std::path::{Path};
 
 use serde::Serialize;
+use serde::de::DeserializeOwned;
 use serde_json::{from_slice, to_vec_pretty};
 
 use super::error::{Result, SnapshotError};
-use super::types::Snapshot;
 
 
 pub fn save<T: Serialize>(value: &T, path: &Path) -> Result<()> {
@@ -26,7 +26,7 @@ pub fn save<T: Serialize>(value: &T, path: &Path) -> Result<()> {
 }
 
 
-pub fn load(path: &Path) -> Result<Snapshot> {
+pub fn load<T: DeserializeOwned>(path: &Path) -> Result<T> {
     let json = fs::read(path).map_err(|source| SnapshotError::Read {
         path: path.to_path_buf(),
         source,
