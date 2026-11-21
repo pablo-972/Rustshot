@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Rustshot logo for dark backgrounds: the icon with black and white swapped. -->
+  <rect x="21" y="12.5" width="22" height="9" rx="2.5" fill="#f2f2f2"/>
+  <rect x="6" y="19" width="52" height="34" rx="6.5" fill="#f2f2f2"/>
+  <circle cx="49.5" cy="26" r="2.3" fill="#111111"/>
+  <circle cx="32" cy="36" r="14" fill="#111111"/>
+  <path d="M32.00 24.56 L41.91 30.28 L41.91 41.72 L32.00 47.44 L22.09 41.72 L22.09 30.28Z" fill="#2563c7"/>
+  <path d="M32.00 31.84L41.91 37.11 M35.60 33.92L35.99 45.13 M35.60 38.08L26.09 44.03 M32.00 40.16L22.09 34.89 M28.40 38.08L28.01 26.87 M28.40 33.92L37.91 27.97" stroke="#111111" stroke-width="1.7" stroke-linecap="round"/>
+  <path d="M32.00 31.84 L35.60 33.92 L35.60 38.08 L32.00 40.16 L28.40 38.08 L28.40 33.92Z" fill="#f2f2f2"/>
+</svg>
