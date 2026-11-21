@@ -1,7 +1,7 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use super::{registry, system};
 use crate::error::Result;
+use crate::{registry, system};
 use crate::types::{
     Snapshot,
     SnapshotData,
@@ -11,9 +11,9 @@ use crate::types::{
 
 
 /// Captures the system. `report` is called as the capture goes, with the
-/// keys and values captured so far.
+/// keys and values captured so far, and the keys that could not be opened.
 pub fn shot(mut report: impl FnMut(SnapshotSummary)) -> Result<Snapshot> {
-    let registry = registry::capture(&mut report)?;
+    let registry = registry::capture(&mut report);
 
     Ok(Snapshot {
         meta: SnapshotMeta {
@@ -22,10 +22,14 @@ pub fn shot(mut report: impl FnMut(SnapshotSummary)) -> Result<Snapshot> {
             device: system::device(),
         },
         summary: SnapshotSummary {
-            registry_keys: registry.len(),
-            registry_values: registry.values().map(|key| key.values.len()).sum(),
+            registry_keys: registry.keys.len(),
+            registry_values: registry.keys.values().map(|key| key.values.len()).sum(),
+            registry_inaccessible: registry.inaccessible.len(),
         },
-        data: SnapshotData { registry },
+        data: SnapshotData {
+            registry: registry.keys,
+            inaccessible: registry.inaccessible,
+        },
     })
 }
 

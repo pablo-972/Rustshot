@@ -76,6 +76,8 @@ pub struct RegistryDiffSummary {
     pub values_added: usize,
     pub values_deleted: usize,
     pub values_modified: usize,
+    #[serde(default)]
+    pub not_compared: usize,
 }
 
 #[derive(
@@ -93,6 +95,10 @@ pub struct RegistryDiff {
     pub values_added: Vec<ValueEntry>,
     pub values_deleted: Vec<ValueEntry>,
     pub values_modified: Vec<ValueChange>,
+    /// Keys that could not be read in one of the snapshots, so they and their
+    /// subkeys were not compared.
+    #[serde(default)]
+    pub not_compared: Vec<String>,
 }
 
 #[derive(

@@ -5,7 +5,7 @@ use fltk::frame::Frame;
 use fltk::input::Input;
 use fltk::prelude::*;
 use fltk::window::Window;
-use kernel::SnapshotSummary;
+use rustshot_core::SnapshotSummary;
 
 use super::layout::{
     BUTTON_WIDTH,
@@ -269,15 +269,28 @@ fn shot_info(shot: &ShotFile) -> String {
     counts(&shot.snapshot.summary)
 }
 
-// "12,345 keys, 67,890 values"
+// "12,345 keys, 67,890 values", and the inaccessible keys if there are any.
 fn counts(summary: &SnapshotSummary) -> String {
-    format!(
+    let mut text = format!(
         "{} keys, {} values",
         format_count(summary.registry_keys),
         format_count(summary.registry_values)
-    )
+    );
+
+    if summary.registry_inaccessible > 0 {
+        text.push_str(&format!(", {} inaccessible", format_count(summary.registry_inaccessible)));
+    }
+
+    text
 }
 
 fn diff_info(result: &DiffFile) -> String {
-    format!("{} changes", format_count(result.diff.summary.total))
+    let summary = &result.diff.summary;
+    let mut text = format!("{} changes", format_count(summary.total));
+
+    if summary.registry.not_compared > 0 {
+        text.push_str(&format!(", {} not compared", format_count(summary.registry.not_compared)));
+    }
+
+    text
 }

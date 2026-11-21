@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Instant;
 
-use kernel::{Snapshot, SnapshotDiff, SnapshotSummary};
+use rustshot_core::{Snapshot, SnapshotDiff, SnapshotSummary};
 
 
 // Everything the capture window shows.

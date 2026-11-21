@@ -1,15 +1,14 @@
 use std::io;
 use std::path::PathBuf;
 
-use thiserror::Error;
 
-
-#[derive(Debug, Error)]
-pub enum SnapshotError {
-    #[error("cannot read snapshot {}", path.display())]
+// Errors of reading and writing the JSON files, snapshots and diffs alike.
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error("cannot read {}", path.display())]
     Read {path: PathBuf, #[source] source: io::Error},
 
-    #[error("invalid snapshot {}", path.display())]
+    #[error("invalid JSON in {}", path.display())]
     Parse {path: PathBuf, #[source] source: serde_json::Error},
 
     #[error("cannot serialize to JSON")]
@@ -20,4 +19,4 @@ pub enum SnapshotError {
 }
 
 
-pub type Result<T> = std::result::Result<T, SnapshotError>;
+pub type Result<T> = std::result::Result<T, Error>;

@@ -2,17 +2,19 @@
 //!
 //! Captures the registry, compares snapshots and saves them as JSON.
 
-mod capture;
-mod compare;
+mod diff;
 mod error;
 mod hex;
+mod registry;
+mod shot;
 mod storage;
+mod system;
 mod types;
 
 
-pub use capture::shot;
-pub use compare::compare;
-pub use error::SnapshotError;
+pub use diff::diff;
+pub use error::Error;
+pub use shot::shot;
 pub use storage::{load, save};
 pub use types::{
     DeviceInfo,

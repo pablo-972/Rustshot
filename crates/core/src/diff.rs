@@ -1,6 +1,4 @@
-use std::collections::{BTreeMap, BTreeSet};
-
-use super::registry;
+use crate::registry;
 use crate::types::{
     DiffChanges,
     DiffMeta,
@@ -12,8 +10,8 @@ use crate::types::{
 };
 
 
-pub fn compare(before: &Snapshot, after: &Snapshot) -> SnapshotDiff {
-    let registry = registry::compare(&before.data.registry, &after.data.registry);
+pub fn diff(before: &Snapshot, after: &Snapshot) -> SnapshotDiff {
+    let registry = registry::compare(&before.data, &after.data);
     let summary = summarize(&registry);
 
     SnapshotDiff {
@@ -34,6 +32,7 @@ fn summarize(registry: &RegistryDiff) -> DiffSummary {
         values_added: registry.values_added.len(),
         values_deleted: registry.values_deleted.len(),
         values_modified: registry.values_modified.len(),
+        not_compared: registry.not_compared.len(),
     };
 
     let total = registry.keys_added
@@ -43,13 +42,4 @@ fn summarize(registry: &RegistryDiff) -> DiffSummary {
         + registry.values_modified;
 
     DiffSummary { registry, total }
-}
-
-
-/// Keys of both maps, sorted and without duplicates.
-pub(super) fn union<'a, V>(
-    a: &'a BTreeMap<String, V>,
-    b: &'a BTreeMap<String, V>,
-) -> BTreeSet<&'a String> {
-    a.keys().chain(b.keys()).collect()
 }

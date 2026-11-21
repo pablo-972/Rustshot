@@ -1,4 +1,4 @@
-use kernel::SnapshotSummary;
+use rustshot_core::SnapshotSummary;
 
 use super::state::{DiffFile, ShotFile, Step, ThemeMode};
 

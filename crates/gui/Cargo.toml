@@ -1,10 +1,10 @@
 [package]
-name = "gui"
+name = "rustshot-gui"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
 anyhow.workspace = true
 fltk.workspace = true
-kernel.workspace = true
+rustshot-core.workspace = true
 winreg.workspace = true

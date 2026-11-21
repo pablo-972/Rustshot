@@ -47,6 +47,10 @@ pub struct SnapshotData {
     /// Registry: key path -> (key -> (value name -> value))
     #[serde(default)]
     pub registry: BTreeMap<String, RegistryKey>,
+    /// Keys that exist but could not be opened, such as HKLM\SAM\SAM. Their
+    /// subkeys are not captured either.
+    #[serde(default)]
+    pub inaccessible: Vec<String>,
 }
 
 #[derive(
@@ -95,4 +99,6 @@ pub struct DeviceInfo {
 pub struct SnapshotSummary {
     pub registry_keys: usize,
     pub registry_values: usize,
+    #[serde(default)]
+    pub registry_inaccessible: usize,
 }

@@ -3,7 +3,7 @@ use fltk::button::Button;
 use fltk::frame::Frame;
 use fltk::prelude::*;
 
-use super::badge::badge;
+use super::badge::Badge;
 use super::layout::{
     BUTTON_WIDTH,
     BUTTON_X,
@@ -31,7 +31,7 @@ use crate::view::widgets::{
 
 // One step of the workflow: number, file name, result and button.
 pub(super) struct StepRow {
-    badge: Frame,
+    badge: Badge,
     name: FileField,
     info: Frame,
     pub button: Button,
@@ -56,7 +56,7 @@ impl StepRow {
         open: Message
     ) -> Self {
         let top = ROW_TOP + index * ROW_HEIGHT;
-        let badge = badge(MARGIN, top + ROW_BADGE, index + 1);
+        let badge = Badge::new(MARGIN, top + ROW_BADGE, index + 1);
         caption(FIELD_X, top + ROW_CAPTION, caption_text);
 
         let mut name_field = FileField::new(
@@ -95,8 +95,7 @@ impl StepRow {
         self.button.set_label(step.label);
         style_button(&mut self.button, step.primary && step.enabled);
 
-        let done = step.done.is_some();
-        self.badge.set_color(if done { theme::SUCCESS_BG } else { theme::CARD });
+        self.badge.set_done(step.done.is_some());
 
         // Only how the step goes while it runs, or its result: no help texts.
         let (text, color) = match (step.running, step.done) {

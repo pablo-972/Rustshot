@@ -4,8 +4,10 @@
 #   64-bit: cargo +nightly build -Zbuild-std --target x86_64-win7-windows-gnu --release
 #   32-bit: cargo +nightly build -Zbuild-std --target i686-win7-windows-gnu --release
 #
-# Use the build that matches the architecture of the VM: a 32-bit process on
-# 64-bit Windows sees the registry redirected to Wow6432Node.
+# Both builds read the 64-bit view of the registry, so both capture it whole
+# on any Windows. The 64-bit one is the one to use on 64-bit Windows: it has
+# no 2 GB memory limit for large registries. The 32-bit one is for 32-bit
+# Windows.
 
 # Rustshot only runs on Windows: every build is for Windows, also the ones
 # for checking the code (cargo build, cargo clippy, rust-analyzer).

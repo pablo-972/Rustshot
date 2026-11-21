@@ -4,6 +4,7 @@ use winreg::enums::{
     HKEY_LOCAL_MACHINE,
     HKEY_USERS,
     KEY_READ,
+    KEY_WOW64_64KEY,
     REG_BINARY,
     REG_DWORD,
     REG_EXPAND_SZ,
@@ -15,11 +16,10 @@ use winreg::types::FromRegValue;
 use winreg::{HKEY, RegKey, RegValue};
 
 use super::progress::Progress;
-use crate::error::Result;
 use crate::types::{
     RegistryKey,
     RegistryValue,
-    SnapshotSummary
+    SnapshotSummary,
 };
 
 
@@ -33,31 +33,34 @@ const ROOTS: [(&str, HKEY); 2] = [
 ];
 
 
-pub(crate) fn capture(
-    report: &mut dyn FnMut(SnapshotSummary)
-) -> Result<BTreeMap<String, RegistryKey>> {
-    let mut keys = BTreeMap::new();
+// What the capture of the registry gathers.
+#[derive(Default)]
+pub(crate) struct Registry {
+    pub keys: BTreeMap<String, RegistryKey>,
+    pub inaccessible: Vec<String>,
+}
+
+
+pub(crate) fn capture(report: &mut dyn FnMut(SnapshotSummary)) -> Registry {
+    let mut registry = Registry::default();
     let mut progress = Progress::new(report);
 
     for (name, hive) in ROOTS {
-        walk(&RegKey::
-            predef(hive), 
-            name.to_string(), 
-            &mut keys, 
-            &mut progress
-        );
+        let root = RegKey::predef(hive);
+        walk(&root, name.to_string(), &mut registry, &mut progress);
     }
 
-    progress.finish(keys.len());
-    
-    Ok(keys)
+    registry.inaccessible.sort();
+    progress.finish();
+
+    registry
 }
 
 
 fn walk(
     key: &RegKey,
     path: String,
-    out: &mut BTreeMap<String, RegistryKey>,
+    registry: &mut Registry,
     progress: &mut Progress
 ) {
     let values = key
@@ -67,16 +70,22 @@ fn walk(
         .collect();
 
     for sub in key.enum_keys().flatten() {
-        if let Ok(child) = key.open_subkey_with_flags(&sub, KEY_READ) {
-            walk(&child, format!("{path}\\{sub}"), out, progress);
+        let child_path = format!("{path}\\{sub}");
+
+        // It is listed, so it exists: if it cannot be opened, access is
+        // usually denied.
+        match key.open_subkey_with_flags(&sub, KEY_READ | KEY_WOW64_64KEY) {
+            Ok(child) => walk(&child, child_path, registry, progress),
+            Err(_) => {
+                registry.inaccessible.push(child_path);
+                progress.inaccessible();
+            }
         }
     }
 
     let captured = RegistryKey { values };
-    let count = captured.values.len();
-
-    out.insert(path, captured);
-    progress.add(out.len(), count);
+    progress.key(captured.values.len());
+    registry.keys.insert(path, captured);
 }
 
 fn convert(value: &RegValue) -> RegistryValue {

@@ -7,10 +7,9 @@ name = "Rustshot"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "cli",
  "embed-resource",
- "gui",
- "kernel",
+ "rustshot-cli",
+ "rustshot-gui",
 ]
 
 [[package]]
@@ -132,15 +131,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1c133bc6a41be0d194c306b5506d15e6feeea7b1d6604bd3f8310dfb2ca96486"
 
 [[package]]
-name = "cli"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "kernel",
-]
-
-[[package]]
 name = "cmake"
 version = "0.1.58"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -227,16 +217,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gui"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "fltk",
- "kernel",
- "winreg",
-]
-
-[[package]]
 name = "hashbrown"
 version = "0.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -269,16 +249,6 @@ name = "itoa"
 version = "1.0.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3bd1574e617a9a6c1f8f8181bd7e841e1f20e4277607ef28945765188d6284d4"
-
-[[package]]
-name = "kernel"
-version = "0.1.0"
-dependencies = [
- "serde",
- "serde_json",
- "thiserror",
- "winreg",
-]
 
 [[package]]
 name = "libc"
@@ -338,6 +308,35 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cfcb3a22ef46e85b45de6ee7e79d063319ebb6594faafcf1c225ea92ab6e9b92"
 dependencies = [
  "semver",
+]
+
+[[package]]
+name = "rustshot-cli"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "rustshot-core",
+]
+
+[[package]]
+name = "rustshot-core"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "thiserror",
+ "winreg",
+]
+
+[[package]]
+name = "rustshot-gui"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "fltk",
+ "rustshot-core",
+ "winreg",
 ]
 
 [[package]]

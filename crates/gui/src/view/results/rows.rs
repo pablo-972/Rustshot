@@ -1,6 +1,6 @@
 //! The changes of a diff as rows: what each one says and how it is found.
 
-use kernel::{RegistryValue, SnapshotDiff};
+use rustshot_core::{RegistryValue, SnapshotDiff};
 
 use super::list::FORMAT;
 use crate::types::Filter;

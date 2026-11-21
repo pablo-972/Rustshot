@@ -6,7 +6,7 @@ use std::thread;
 use std::time::Duration;
 
 use fltk::app::Sender;
-use kernel::{Snapshot, SnapshotError};
+use rustshot_core::Snapshot;
 
 use crate::types::{
     DiffFile,
@@ -38,8 +38,8 @@ pub(super) fn compare(
     sender: Sender<Message>
 ) {
     thread::spawn(move || {
-        let diff = kernel::compare(&before, &after);
-        let result = kernel::save(&diff, &path)
+        let diff = rustshot_core::diff(&before, &after);
+        let result = rustshot_core::save(&diff, &path)
             .map(|()| DiffFile { diff: Arc::new(diff), path })
             .map_err(|e| describe(&e));
 
@@ -53,7 +53,7 @@ pub(super) fn open_shot(
     sender: Sender<Message>
 ) {
     thread::spawn(move || {
-        let result = kernel::load(&path)
+        let result = rustshot_core::load(&path)
             .map(|snap| ShotFile { snapshot: Arc::new(snap), path })
             .map_err(|e| describe(&e));
 
@@ -63,7 +63,7 @@ pub(super) fn open_shot(
 
 pub(super) fn open_diff(path: PathBuf, sender: Sender<Message>) {
     thread::spawn(move || {
-        let result = kernel::load(&path)
+        let result = rustshot_core::load(&path)
             .map(|diff| DiffFile { diff: Arc::new(diff), path })
             .map_err(|e| describe(&e));
 
@@ -72,9 +72,9 @@ pub(super) fn open_diff(path: PathBuf, sender: Sender<Message>) {
 }
 
 
-fn take_shot(path: PathBuf, sender: Sender<Message>) -> Result<ShotFile, SnapshotError> {
-    let snap = kernel::shot(|captured| sender.send(Message::ShotProgress(captured)))?;
-    kernel::save(&snap, &path)?;
+fn take_shot(path: PathBuf, sender: Sender<Message>) -> Result<ShotFile, rustshot_core::Error> {
+    let snap = rustshot_core::shot(|captured| sender.send(Message::ShotProgress(captured)))?;
+    rustshot_core::save(&snap, &path)?;
 
     Ok(ShotFile { snapshot: Arc::new(snap), path })
 }

@@ -1,6 +1,6 @@
 //! Types of Rustshot.
 //!
-//! Defines every kind of type used
+//! The snapshot, the diff and the registry values, as saved in the JSON.
 
 mod diff;
 mod registry;

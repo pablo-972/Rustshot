@@ -1,7 +1,11 @@
 use std::env;
 
 use winreg::RegKey;
-use winreg::enums::{HKEY_LOCAL_MACHINE, KEY_READ};
+use winreg::enums::{
+    HKEY_LOCAL_MACHINE,
+    KEY_READ,
+    KEY_WOW64_64KEY,
+};
 
 use crate::types::{DeviceInfo, SystemInfo};
 
@@ -10,7 +14,7 @@ use crate::types::{DeviceInfo, SystemInfo};
 const CURRENT_VERSION: &str = r"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
 
 
-pub(super) fn system() -> SystemInfo {
+pub(crate) fn system() -> SystemInfo {
     let key = VersionKey::open();
 
     SystemInfo {
@@ -24,7 +28,7 @@ pub(super) fn system() -> SystemInfo {
     }
 }
 
-pub(super) fn device() -> DeviceInfo {
+pub(crate) fn device() -> DeviceInfo {
     DeviceInfo {
         hostname: variable("COMPUTERNAME"),
         user: variable("USERNAME"),
@@ -39,7 +43,7 @@ struct VersionKey(Option<RegKey>);
 impl VersionKey {
     fn open() -> Self {
         let key = RegKey::predef(HKEY_LOCAL_MACHINE)
-            .open_subkey_with_flags(CURRENT_VERSION, KEY_READ)
+            .open_subkey_with_flags(CURRENT_VERSION, KEY_READ | KEY_WOW64_64KEY)
             .ok();
 
         Self(key)

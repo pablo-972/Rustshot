@@ -24,8 +24,8 @@ pub enum Command {
         output: PathBuf,
     },
 
-    /// Compare two snapshot files
-    Compare {
+    /// Compare two snapshot files and save the differences
+    Diff {
         before: PathBuf,
         after: PathBuf,
 

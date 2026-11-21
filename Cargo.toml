@@ -5,9 +5,8 @@ edition = "2024"
 
 [dependencies]
 anyhow.workspace = true
-cli.workspace = true
-gui.workspace = true
-kernel.workspace = true
+rustshot-cli.workspace = true
+rustshot-gui.workspace = true
 
 [build-dependencies]
 embed-resource = "3.0"
@@ -15,16 +14,16 @@ embed-resource = "3.0"
 [workspace]
 members = [
     "crates/cli",
+    "crates/core",
     "crates/gui",
-    "crates/kernel",
 ]
 resolver = "3"
 
 [workspace.dependencies]
 # Crates of the workspace
-cli = { path = "crates/cli" }
-gui = { path = "crates/gui" }
-kernel = { path = "crates/kernel" }
+rustshot-cli = { path = "crates/cli" }
+rustshot-core = { path = "crates/core" }
+rustshot-gui = { path = "crates/gui" }
 
 # External crates
 anyhow = "1.0"

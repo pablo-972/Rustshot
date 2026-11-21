@@ -12,7 +12,7 @@ unsafe extern "system" {
 
 pub fn is_gui() -> bool {
     let mut processes = [0u32; 2];
-    
+
     // SAFETY: the buffer has room for the 2 entries passed as its size.
     let attached = unsafe { GetConsoleProcessList(processes.as_mut_ptr(), 2) };
 

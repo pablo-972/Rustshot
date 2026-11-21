@@ -1,24 +1,34 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
-use super::diff::union;
 use crate::types::{
     RegistryDiff,
     RegistryKey,
+    SnapshotData,
     ValueChange,
     ValueEntry,
 };
 
 
-pub(super) fn compare(
-    before: &BTreeMap<String, RegistryKey>,
-    after: &BTreeMap<String, RegistryKey>,
-) -> RegistryDiff {
+pub(crate) fn compare(before: &SnapshotData, after: &SnapshotData) -> RegistryDiff {
     let mut diff = RegistryDiff::default();
     let empty = RegistryKey::default();
 
-    for path in union(before, after) {
-        let old = before.get(path);
-        let new = after.get(path);
+    // Keys that could not be read in either snapshot. What is below them is
+    // unknown in one of the two, so it is left out instead of showing up as
+    // added or deleted.
+    let skipped: BTreeSet<&str> = before.inaccessible
+        .iter()
+        .chain(&after.inaccessible)
+        .map(String::as_str)
+        .collect();
+
+    for path in union(&before.registry, &after.registry) {
+        if inside(path, &skipped) {
+            continue;
+        }
+
+        let old = before.registry.get(path);
+        let new = after.registry.get(path);
 
         match (old, new) {
             (Some(_), None) => diff.keys_deleted.push(path.clone()),
@@ -36,6 +46,7 @@ pub(super) fn compare(
         );
     }
 
+    diff.not_compared = skipped.into_iter().map(str::to_string).collect();
     diff
 }
 
@@ -72,4 +83,28 @@ fn compare_values(
             _ => {}
         }
     }
+}
+
+// Whether `path` is one of `skipped` or is below one of them.
+fn inside(path: &str, skipped: &BTreeSet<&str>) -> bool {
+    let mut current = path;
+
+    loop {
+        if skipped.contains(current) {
+            return true;
+        }
+
+        match current.rsplit_once('\\') {
+            Some((parent, _)) => current = parent,
+            None => return false,
+        }
+    }
+}
+
+// Keys of both maps, sorted and without duplicates.
+fn union<'a, V>(
+    a: &'a BTreeMap<String, V>,
+    b: &'a BTreeMap<String, V>,
+) -> BTreeSet<&'a String> {
+    a.keys().chain(b.keys()).collect()
 }
