@@ -10,10 +10,8 @@ use winreg::enums::HKEY_CURRENT_USER;
 
 
 const PERSONALIZE: &str = r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
-
-// Dark title bar: 20 since Windows 10 20H1, 19 on older builds of Windows 10.
-const DARK_MODE: u32 = 20;
-const DARK_MODE_OLD: u32 = 19;
+const DARK_MODE: u32 = 20; // Since Windows 10 20H1
+const DARK_MODE_OLD: u32 = 19; // On older builds of Windows 10
 
 
 #[link(name = "dwmapi")]
@@ -27,8 +25,6 @@ unsafe extern "system" {
 }
 
 
-/// Whether the apps are dark. Read once: the theme does not change while
-/// Rustshot is open.
 pub(super) fn dark() -> bool {
     static DARK: OnceLock<bool> = OnceLock::new();
     *DARK.get_or_init(read)

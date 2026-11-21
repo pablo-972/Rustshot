@@ -5,6 +5,7 @@ use fltk::dialog::{NativeFileChooser, NativeFileChooserType};
 
 use super::tasks;
 use crate::format::file_name;
+use crate::view::{CaptureWindow, Windows};
 use crate::types::{
     Message,
     State,
@@ -12,11 +13,10 @@ use crate::types::{
     Step,
     Task,
 };
-use crate::view::{CaptureWindow, Windows};
 
 
 pub(super) fn browse(capture: &mut CaptureWindow) {
-    let chosen = choose(NativeFileChooserType::BrowseDir, &capture.output());
+    let chosen = choose_folder(&capture.output());
 
     if let Some(dir) = chosen {
         capture.set_output(&dir.to_string_lossy());
@@ -94,7 +94,7 @@ pub(super) fn open_shot(
     step: Step,
     sender: Sender<Message>
 ) {
-    let Some(path) = choose(NativeFileChooserType::BrowseFile, &windows.capture.output()) else {
+    let Some(path) = choose_file(&windows.capture.output()) else {
         return;
     };
 
@@ -114,7 +114,7 @@ pub(super) fn open_diff(
     windows: &mut Windows,
     sender: Sender<Message>
 ) {
-    let Some(path) = choose(NativeFileChooserType::BrowseFile, &windows.capture.output()) else {
+    let Some(path) = choose_file(&windows.capture.output()) else {
         return;
     };
 
@@ -163,7 +163,17 @@ fn output_path(capture: &CaptureWindow, name: &str) -> PathBuf {
 }
 
 
-// System dialog to pick a folder or a file. None if it is cancelled.
+// System dialogs to pick a folder or a JSON file. None if they are cancelled.
+fn choose_folder(start: &str) -> Option<PathBuf> {
+    choose(NativeFileChooserType::BrowseDir, start)
+}
+
+
+fn choose_file(start: &str) -> Option<PathBuf> {
+    choose(NativeFileChooserType::BrowseFile, start)
+}
+
+
 fn choose(kind: NativeFileChooserType, start: &str) -> Option<PathBuf> {
     let mut chooser = NativeFileChooser::new(kind);
 

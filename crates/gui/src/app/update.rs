@@ -2,6 +2,7 @@ use fltk::app::Sender;
 
 use super::actions;
 use crate::format::{file_name, format_count};
+use crate::view::Windows;
 use crate::types::{
     DiffFile,
     Message,
@@ -10,7 +11,6 @@ use crate::types::{
     Status,
     Step,
 };
-use crate::view::Windows;
 
 
 pub(super) fn update(
@@ -54,7 +54,10 @@ fn shot_done(
 
     match result {
         Ok(shot) => {
-            state.status = Status::info(&format!("{action} {}", file_name(&shot.path)));
+            state.status = Status::info(&format!(
+                "{action} {}", 
+                file_name(&shot.path)
+            ));
 
             match step {
                 Step::First => state.first = Some(shot),
@@ -89,7 +92,10 @@ fn diff_opened(
 
     match result {
         Ok(diff) => {
-            state.status = Status::info(&format!("Opened {}", file_name(&diff.path)));
+            state.status = Status::info(&format!(
+                "Opened {}", 
+                file_name(&diff.path)
+            ));
             windows.results.load(&diff);
             windows.results.show();
             state.diff = Some(diff);

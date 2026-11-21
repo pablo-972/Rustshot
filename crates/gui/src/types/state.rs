@@ -3,9 +3,7 @@ use super::status::Status;
 use super::task::Task;
 
 
-// Everything the capture window shows. The widgets keep no state of their
-// own, except the text the user types. The results window keeps its filter
-// and its rows: nothing else depends on them.
+// Everything the capture window shows. 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct State {
     pub first: Option<ShotFile>,
