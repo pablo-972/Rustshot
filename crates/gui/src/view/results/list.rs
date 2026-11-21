@@ -16,10 +16,11 @@ pub(super) const FORMAT: char = '\u{1}';
 const KEY_SIZE: i32 = 12;
 const VALUE_SIZE: i32 = 13;
 
-// Height of the empty lines used as space: around each change, and between
-// the key and the value.
+// Height of the empty lines used as space: around each change, between the
+// key and the value, and the uncoloured gap between two changes.
 const AROUND: i32 = 10;
 const BETWEEN: i32 = 4;
+const GAP: i32 = 3;
 
 
 // How many characters of each font size fit in the list.
@@ -41,17 +42,19 @@ impl Fit {
 
 
 // Lines of the list for a change: some space, the coloured symbol and the
-// key, the value below, more space and a separator. Long texts go on
-// several lines.
+// key, the value below, more space and a small gap without colour before the
+// next change. Long texts go on several lines.
 pub(super) fn lines(row: &Row, fit: &Fit) -> Vec<String> {
     // All is the filter of no row: it only exists for the buttons.
-    let (symbol, color) = match row.filter {
-        Filter::KeysAdded | Filter::ValuesAdded => ("+", theme::SUCCESS),
-        Filter::KeysDeleted | Filter::ValuesDeleted => ("-", theme::DANGER),
-        Filter::Modified | Filter::All => ("~", theme::WARNING),
+    let (symbol, color, background) = match row.filter {
+        Filter::KeysAdded | Filter::ValuesAdded => ("+", theme::SUCCESS, theme::ADDED_BG),
+        Filter::KeysDeleted | Filter::ValuesDeleted => ("-", theme::DANGER, theme::DELETED_BG),
+        Filter::Modified | Filter::All => ("~", theme::WARNING, theme::MODIFIED_BG),
     };
 
-    let mut lines = vec![space(AROUND)];
+    // Each column of each line is filled, so the change is one coloured block.
+    let fill = fill(background);
+    let mut lines = vec![format!("{fill}{}", space(AROUND))];
 
     for (i, part) in wrap(&row.key, fit.key).iter().enumerate() {
         let symbol = if i == 0 {
@@ -60,17 +63,19 @@ pub(super) fn lines(row: &Row, fit: &Fit) -> Vec<String> {
             String::new()
         };
 
-        lines.push(format!("{symbol}\t{}{part}", style(theme::TEXT_SECONDARY, KEY_SIZE)));
+        let key = style(theme::TEXT_SECONDARY, KEY_SIZE);
+        lines.push(format!("{fill}{symbol}\t{fill}{key}{part}"));
     }
 
-    lines.push(space(BETWEEN));
+    lines.push(format!("{fill}{}", space(BETWEEN)));
 
     for part in wrap(&row.text, fit.value) {
-        lines.push(format!("\t{}{part}", style(theme::TEXT, VALUE_SIZE)));
+        let value = style(theme::TEXT, VALUE_SIZE);
+        lines.push(format!("{fill}\t{fill}{value}{part}"));
     }
 
-    lines.push(space(AROUND));
-    lines.push(separator());
+    lines.push(format!("{fill}{}", space(AROUND)));
+    lines.push(space(GAP));
     lines
 }
 
@@ -78,6 +83,12 @@ pub(super) fn lines(row: &Row, fit: &Fit) -> Vec<String> {
 // Line shown when no change passes the filter and the search.
 pub(super) fn empty() -> String {
     format!("\t{}(no changes match)", style(theme::TEXT_MUTED, VALUE_SIZE))
+}
+
+
+// Background of a column. The list does not paint it on the selected line.
+fn fill(color: Color) -> String {
+    format!("{FORMAT}B{}", color.bits())
 }
 
 
@@ -90,12 +101,6 @@ fn style(color: Color, size: i32) -> String {
 // An empty line of the given font size, used as vertical space.
 fn space(size: i32) -> String {
     format!("{FORMAT}S{size}{FORMAT}.")
-}
-
-
-// A horizontal line between two changes.
-fn separator() -> String {
-    format!("{FORMAT}S8{FORMAT}-")
 }
 
 

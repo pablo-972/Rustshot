@@ -72,7 +72,7 @@ impl CaptureWindow {
         let mut output_field = field(MARGIN, OUTPUT_TOP, OUTPUT_WIDTH);
         output_field.set_value(output);
 
-        let mut browse = button(BUTTON_X, OUTPUT_TOP, BUTTON_WIDTH, "Browse…");
+        let mut browse = button(BUTTON_X, OUTPUT_TOP, BUTTON_WIDTH, "Browse");
         browse.emit(sender, Message::Browse);
 
         // Line between the output folder and the steps.

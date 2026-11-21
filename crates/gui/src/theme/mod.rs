@@ -32,12 +32,19 @@ pub(crate) const SUCCESS_BG: Color = Color::from_rgbi(29);
 pub(crate) const DANGER: Color = Color::from_rgbi(30);
 pub(crate) const WARNING: Color = Color::from_rgbi(31);
 
+// Pale backgrounds of the changes in the results list. FLTK only has 16 free
+// slots (16 to 31), so these take slots of its color cube that it does not
+// name or use.
+pub(crate) const ADDED_BG: Color = Color::from_rgbi(57);
+pub(crate) const DELETED_BG: Color = Color::from_rgbi(58);
+pub(crate) const MODIFIED_BG: Color = Color::from_rgbi(59);
+
 
 type Rgb = (u8, u8, u8);
 
 // Light and dark value of each color. Borders and secondary texts keep a
 // strong contrast with the backgrounds in both.
-const PALETTE: [(Color, Rgb, Rgb); 20] = [
+const PALETTE: [(Color, Rgb, Rgb); 23] = [
     (BACKGROUND, (250, 250, 249), (32, 32, 32)),
     (FOOTER, (241, 240, 236), (40, 40, 40)),
     (CARD, (243, 242, 239), (52, 52, 52)),
@@ -54,6 +61,9 @@ const PALETTE: [(Color, Rgb, Rgb); 20] = [
     (SUCCESS_BG, (222, 238, 205), (36, 66, 34)),
     (DANGER, (175, 25, 25), (240, 115, 110)),
     (WARNING, (150, 80, 0), (232, 168, 70)),
+    (ADDED_BG, (238, 247, 234), (31, 45, 31)),
+    (DELETED_BG, (251, 236, 235), (52, 33, 33)),
+    (MODIFIED_BG, (252, 243, 227), (51, 41, 26)),
 
     // FLTK's own colors, for what it draws by itself: text and fields by
     // default, the selection, and the lines of scrollbars and of the
