@@ -1,10 +1,12 @@
 //! Colors, fonts and box styles of the interface.
 
+mod system;
+
 use fltk::app;
 use fltk::draw;
 use fltk::enums::{Color, Font, FrameType};
 
-use crate::system_theme;
+pub(crate) use system::dark_title_bar;
 
 
 // Each color is a free slot of the FLTK color map. apply() fills the slots
@@ -75,7 +77,7 @@ const RADIUS: i32 = 6;
 
 
 pub(crate) fn apply() {
-    let dark = system_theme::dark();
+    let dark = system::dark();
     let pick = |light_rgb, dark_rgb| if dark { dark_rgb } else { light_rgb };
 
     // The background also recalculates FLTK's greys, so it goes before the

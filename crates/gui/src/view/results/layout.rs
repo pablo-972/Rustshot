@@ -2,6 +2,8 @@ pub(super) const WIDTH: i32 = 960;
 pub(super) const HEIGHT: i32 = 540;
 pub(super) const MARGIN: i32 = 12;
 
+// Filter buttons, in a row at the top.
+pub(super) const CHIPS_TOP: i32 = 12;
 pub(super) const CHIP_WIDTH: i32 = 126;
 pub(super) const CHIP_GAP: i32 = 6;
 

@@ -3,7 +3,6 @@ use std::path::PathBuf;
 use clap::{Parser, Subcommand};
 
 
-/// Captures and compares Windows system state
 #[derive(Debug, Parser)]
 #[command(version)]
 pub struct Cli {
@@ -12,6 +11,7 @@ pub struct Cli {
 }
 
 
+/// Captures and compares Windows system state
 #[derive(Debug, Subcommand)]
 pub enum Command {     
     /// Take a snapshot of the system state

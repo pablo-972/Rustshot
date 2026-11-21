@@ -6,10 +6,10 @@ use std::thread;
 use fltk::app::Sender;
 use kernel::{Snapshot, SnapshotError};
 
-use crate::types::{DiffResult, Message, Shot, Step};
+use crate::types::{DiffFile, Message, ShotFile, Step};
 
 
-pub(crate) fn shoot(
+pub(super) fn shoot(
     step: Step,
     path: PathBuf,
     sender: Sender<Message>
@@ -21,7 +21,7 @@ pub(crate) fn shoot(
 }
 
 
-pub(crate) fn compare(
+pub(super) fn compare(
     before: Arc<Snapshot>,
     after: Arc<Snapshot>,
     path: PathBuf,
@@ -30,7 +30,7 @@ pub(crate) fn compare(
     thread::spawn(move || {
         let diff = kernel::compare(&before, &after);
         let result = kernel::save(&diff, &path)
-            .map(|()| DiffResult { diff: Arc::new(diff), path })
+            .map(|()| DiffFile { diff: Arc::new(diff), path })
             .map_err(|e| describe(&e));
 
         sender.send(Message::CompareDone(result));
@@ -38,14 +38,14 @@ pub(crate) fn compare(
 }
 
 
-pub(crate) fn open_shot(
+pub(super) fn open_shot(
     step: Step,
     path: PathBuf,
     sender: Sender<Message>
 ) {
     thread::spawn(move || {
         let result = kernel::load(&path)
-            .map(|snap| Shot { snapshot: Arc::new(snap), path })
+            .map(|snap| ShotFile { snapshot: Arc::new(snap), path })
             .map_err(|e| describe(&e));
 
         sender.send(Message::ShotOpened(step, result));
@@ -53,10 +53,10 @@ pub(crate) fn open_shot(
 }
 
 
-pub(crate) fn open_diff(path: PathBuf, sender: Sender<Message>) {
+pub(super) fn open_diff(path: PathBuf, sender: Sender<Message>) {
     thread::spawn(move || {
         let result = kernel::load(&path)
-            .map(|diff| DiffResult { diff: Arc::new(diff), path })
+            .map(|diff| DiffFile { diff: Arc::new(diff), path })
             .map_err(|e| describe(&e));
 
         sender.send(Message::DiffOpened(result));
@@ -64,11 +64,11 @@ pub(crate) fn open_diff(path: PathBuf, sender: Sender<Message>) {
 }
 
 
-fn take_shot(path: PathBuf) -> Result<Shot, SnapshotError> {
+fn take_shot(path: PathBuf) -> Result<ShotFile, SnapshotError> {
     let snap = kernel::shot()?;
     kernel::save(&snap, &path)?;
 
-    Ok(Shot { snapshot: Arc::new(snap), path })
+    Ok(ShotFile { snapshot: Arc::new(snap), path })
 }
 
 

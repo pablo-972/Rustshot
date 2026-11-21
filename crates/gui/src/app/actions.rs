@@ -3,7 +3,8 @@ use std::path::{Path, PathBuf};
 use fltk::app::Sender;
 use fltk::dialog::{NativeFileChooser, NativeFileChooserType};
 
-use crate::tasks;
+use super::tasks;
+use crate::format::file_name;
 use crate::types::{
     Message,
     State,
@@ -11,7 +12,7 @@ use crate::types::{
     Step,
     Task,
 };
-use crate::view::{CaptureWindow, Windows, file_name};
+use crate::view::{CaptureWindow, Windows};
 
 
 pub(super) fn browse(capture: &mut CaptureWindow) {
@@ -33,24 +34,20 @@ pub(super) fn shoot(
     let name = capture.shot_name(step);
 
     if let Err(error) = check(capture, &name) {
-        state.status = failure(error);
+        state.status = Status::error(error);
         return;
     }
 
-    // A new shot makes the later steps outdated.
-    if step == Step::First {
-        state.second = None;
-    }
-    state.diff = None;
-    windows.results.hide();
+    let path = output_path(capture, &name);
+    discard_after(state, windows, step);
 
     state.busy = Some(Task::Shoot(step));
-    state.status = info(match step {
+    state.status = Status::info(match step {
         Step::First => "Taking 1st shot…",
         Step::Second => "Taking 2nd shot…",
     });
 
-    tasks::shoot(step, output_path(capture, &name), sender);
+    tasks::shoot(step, path, sender);
 }
 
 
@@ -67,7 +64,7 @@ pub(super) fn compare(
     let name = capture.diff_name();
 
     if let Err(error) = check(capture, &name) {
-        state.status = failure(error);
+        state.status = Status::error(error);
         return;
     }
 
@@ -76,7 +73,7 @@ pub(super) fn compare(
     let after = second.snapshot.clone();
 
     state.busy = Some(Task::Compare);
-    state.status = info("Comparing…");
+    state.status = Status::info("Comparing…");
 
     tasks::compare(before, after, output_path(capture, &name), sender);
 }
@@ -103,15 +100,10 @@ pub(super) fn open_shot(
 
     windows.capture.set_shot_name(step, &file_name(&path));
 
-    // Like a new shot, it makes the later steps outdated.
-    if step == Step::First {
-        state.second = None;
-    }
-    state.diff = None;
-    windows.results.hide();
+    discard_after(state, windows, step);
 
     state.busy = Some(Task::OpenShot(step));
-    state.status = info("Opening…");
+    state.status = Status::info("Opening…");
 
     tasks::open_shot(step, path, sender);
 }
@@ -129,25 +121,20 @@ pub(super) fn open_diff(
     windows.capture.set_diff_name(&file_name(&path));
 
     state.busy = Some(Task::OpenDiff);
-    state.status = info("Opening…");
+    state.status = Status::info("Opening…");
 
     tasks::open_diff(path, sender);
 }
 
 
-pub(super) fn info(text: &str) -> Status {
-    Status {
-        text: text.to_string(),
-        error: false,
+// A new shot, taken or opened, makes the later steps outdated.
+fn discard_after(state: &mut State, windows: &mut Windows, step: Step) {
+    if step == Step::First {
+        state.second = None;
     }
-}
 
-
-pub(super) fn failure(text: &str) -> Status {
-    Status {
-        text: text.to_string(),
-        error: true,
-    }
+    state.diff = None;
+    windows.results.hide();
 }
 
 

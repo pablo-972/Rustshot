@@ -2,8 +2,9 @@ use std::env;
 
 use fltk::app::{self, App, Scheme};
 
-use super::update::{ready, update};
+use super::update::update;
 use crate::theme;
+use crate::types::State;
 use crate::view::Windows;
 
 
@@ -13,7 +14,7 @@ pub fn run() -> anyhow::Result<()> {
 
     let (sender, receiver) = app::channel();
     let mut windows = Windows::new(sender, &default_output());
-    let mut state = ready();
+    let mut state = State::ready();
 
     windows.capture.render(&state);
 

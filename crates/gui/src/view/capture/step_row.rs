@@ -3,20 +3,24 @@ use fltk::button::Button;
 use fltk::frame::Frame;
 use fltk::prelude::*;
 
+use super::badge::badge;
 use super::layout::{
     BUTTON_WIDTH,
     BUTTON_X,
     FIELD_WIDTH,
     FIELD_X,
     MARGIN,
+    ROW_BADGE,
+    ROW_CAPTION,
+    ROW_FIELD,
     ROW_HEIGHT,
+    ROW_INFO,
     ROW_TOP,
 };
 use crate::theme;
 use crate::types::Message;
-use crate::view::file_field::FileField;
 use crate::view::widgets::{
-    badge,
+    FileField,
     button,
     caption,
     line,
@@ -54,12 +58,12 @@ impl StepRow {
         open: Message
     ) -> Self {
         let top = ROW_TOP + index * ROW_HEIGHT;
-        let badge = badge(MARGIN, top + 34, index + 1);
-        caption(FIELD_X, top + 12, caption_text);
+        let badge = badge(MARGIN, top + ROW_BADGE, index + 1);
+        caption(FIELD_X, top + ROW_CAPTION, caption_text);
 
         let mut name_field = FileField::new(
             FIELD_X,
-            top + 32,
+            top + ROW_FIELD,
             FIELD_WIDTH,
             "Open an existing file",
             sender,
@@ -67,8 +71,8 @@ impl StepRow {
         );
         name_field.set_value(name);
 
-        let info = line(FIELD_X, top + 64, FIELD_WIDTH, 16);
-        let button = button(BUTTON_X, top + 32, BUTTON_WIDTH, "");
+        let info = line(FIELD_X, top + ROW_INFO, FIELD_WIDTH, 16);
+        let button = button(BUTTON_X, top + ROW_FIELD, BUTTON_WIDTH, "");
 
         StepRow {
             badge,

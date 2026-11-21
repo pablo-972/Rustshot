@@ -1,77 +1,30 @@
-use fltk::draw;
-use fltk::enums::Color;
+//! The changes of a diff as rows: what each one says and how it is found.
+
 use kernel::{RegistryValue, SnapshotDiff};
 
-use crate::theme;
+use super::list::FORMAT;
 use crate::types::Filter;
 
 
 // Bytes shown of a binary value before cutting it.
 const BINARY_PREVIEW: usize = 32;
 
-// Formatting codes of the list start with this character instead of '@',
-// because registry data can contain '@'.
-pub(super) const FORMAT: char = '\u{1}';
-
-// Font sizes of the key path and of the value.
-const KEY_SIZE: i32 = 12;
-const VALUE_SIZE: i32 = 13;
-
-// Height of the empty lines used as space: around each change, and between
-// the key and the value.
-const AROUND: i32 = 10;
-const BETWEEN: i32 = 4;
-
-
-#[derive(Clone, Copy)]
-enum Kind {
-    Added,
-    Deleted,
-    Modified,
-}
-
-
 // One change of the diff, ready to be shown.
 pub(super) struct Row {
     pub filter: Filter,
-    kind: Kind,
-    key: String,
-    text: String,
+    pub key: String,
+    pub text: String,
     search: String,
 }
 
 
-// How many characters of each font size fit in the list.
-pub(super) struct Fit {
-    key: usize,
-    value: usize,
-}
-
-
-impl Fit {
-    // The fonts are fixed width: every character is as wide as "M".
-    pub(super) fn new(width: i32) -> Self {
-        Fit {
-            key: chars_that_fit(width, KEY_SIZE),
-            value: chars_that_fit(width, VALUE_SIZE),
-        }
-    }
-}
-
-
 impl Row {
-    fn new(
-        filter: Filter,
-        kind: Kind,
-        key: &str,
-        text: String
-    ) -> Self {
+    fn new(filter: Filter, key: &str, text: String) -> Self {
         let key = clean(key);
         let text = clean(&text);
 
         Row {
             filter,
-            kind,
             search: format!("{key} {text}").to_lowercase(),
             key,
             text,
@@ -83,39 +36,6 @@ impl Row {
         let kind = filter == Filter::All || filter == self.filter;
         kind && (query.is_empty() || self.search.contains(query))
     }
-
-    // Lines of the list for this change: some space, the coloured symbol and
-    // the key, the value below, more space and a separator. Long texts go on
-    // several lines.
-    pub(super) fn lines(&self, fit: &Fit) -> Vec<String> {
-        let (symbol, color) = match self.kind {
-            Kind::Added => ("+", theme::SUCCESS),
-            Kind::Deleted => ("-", theme::DANGER),
-            Kind::Modified => ("~", theme::WARNING),
-        };
-
-        let mut lines = vec![space(AROUND)];
-
-        for (i, part) in wrap(&self.key, fit.key).iter().enumerate() {
-            let symbol = if i == 0 {
-                format!("{FORMAT}C{}{FORMAT}b{FORMAT}S14{symbol}", color.bits())
-            } else {
-                String::new()
-            };
-
-            lines.push(format!("{symbol}\t{}{part}", style(theme::TEXT_SECONDARY, KEY_SIZE)));
-        }
-
-        lines.push(space(BETWEEN));
-
-        for part in wrap(&self.text, fit.value) {
-            lines.push(format!("\t{}{part}", style(theme::TEXT, VALUE_SIZE)));
-        }
-
-        lines.push(space(AROUND));
-        lines.push(separator());
-        lines
-    }
 }
 
 
@@ -125,21 +45,21 @@ pub(super) fn rows(diff: &SnapshotDiff) -> Vec<Row> {
     let mut rows = Vec::new();
 
     for key in &registry.keys_added {
-        rows.push(Row::new(Filter::KeysAdded, Kind::Added, key, "(new key)".to_string()));
+        rows.push(Row::new(Filter::KeysAdded, key, "(new key)".to_string()));
     }
 
     for key in &registry.keys_deleted {
-        rows.push(Row::new(Filter::KeysDeleted, Kind::Deleted, key, "(deleted key)".to_string()));
+        rows.push(Row::new(Filter::KeysDeleted, key, "(deleted key)".to_string()));
     }
 
     for entry in &registry.values_added {
         let text = format!("{} = {}", name(&entry.name), describe(&entry.value));
-        rows.push(Row::new(Filter::ValuesAdded, Kind::Added, &entry.key, text));
+        rows.push(Row::new(Filter::ValuesAdded, &entry.key, text));
     }
 
     for entry in &registry.values_deleted {
         let text = format!("{} = {}", name(&entry.name), describe(&entry.value));
-        rows.push(Row::new(Filter::ValuesDeleted, Kind::Deleted, &entry.key, text));
+        rows.push(Row::new(Filter::ValuesDeleted, &entry.key, text));
     }
 
     for change in &registry.values_modified {
@@ -149,69 +69,12 @@ pub(super) fn rows(diff: &SnapshotDiff) -> Vec<Row> {
             describe(&change.before),
             describe(&change.after)
         );
-        rows.push(Row::new(Filter::Modified, Kind::Modified, &change.key, text));
+        rows.push(Row::new(Filter::Modified, &change.key, text));
     }
 
     // Stable sort: the changes of a key stay in their order.
     rows.sort_by(|a, b| a.key.cmp(&b.key));
     rows
-}
-
-
-// Line shown when no change passes the filter and the search.
-pub(super) fn empty() -> String {
-    format!("\t{}(no changes match)", style(theme::TEXT_MUTED, VALUE_SIZE))
-}
-
-
-// Color, fixed-width font and size, at the start of a column.
-fn style(color: Color, size: i32) -> String {
-    format!("{FORMAT}C{}{FORMAT}f{FORMAT}S{size}", color.bits())
-}
-
-
-// A horizontal line between two changes.
-// An empty line of the given font size, used as vertical space.
-fn space(size: i32) -> String {
-    format!("{FORMAT}S{size}{FORMAT}.")
-}
-
-
-fn separator() -> String {
-    format!("{FORMAT}S8{FORMAT}-")
-}
-
-
-fn chars_that_fit(width: i32, size: i32) -> usize {
-    draw::set_font(theme::FONT_MONO, size);
-    let char_width = draw::width("M").max(1.0);
-
-    ((f64::from(width) / char_width) as usize).max(10)
-}
-
-
-// Splits `text` in lines of at most `max` characters, cutting after a '\',
-// a space or a comma when there is one in the second half of the line.
-fn wrap(text: &str, max: usize) -> Vec<String> {
-    let chars: Vec<char> = text.chars().collect();
-    let mut lines = Vec::new();
-    let mut start = 0;
-
-    while chars.len() - start > max {
-        let end = start + max;
-        let cut = chars[start..end]
-            .iter()
-            .rposition(|c| matches!(c, '\\' | ' ' | ','))
-            .map(|i| start + i + 1)
-            .filter(|cut| *cut > start + max / 2)
-            .unwrap_or(end);
-
-        lines.push(chars[start..cut].iter().collect());
-        start = cut;
-    }
-
-    lines.push(chars[start..].iter().collect());
-    lines
 }
 
 

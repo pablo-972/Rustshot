@@ -6,8 +6,8 @@ use fltk::frame::Frame;
 use fltk::input::Input;
 use fltk::prelude::*;
 
+use super::basic::FIELD_HEIGHT;
 use super::icons;
-use super::widgets::FIELD_HEIGHT;
 use crate::theme;
 
 
@@ -16,7 +16,7 @@ const ICON_WIDTH: i32 = 30;
 
 
 // Returns the input: it is the only part the window needs afterwards.
-pub(super) fn search_field(
+pub(crate) fn search_field(
     x: i32,
     y: i32,
     w: i32,

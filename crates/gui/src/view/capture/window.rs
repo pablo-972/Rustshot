@@ -9,27 +9,30 @@ use fltk::window::Window;
 use super::layout::{
     BUTTON_WIDTH,
     BUTTON_X,
+    FOOTER_PADDING,
     FOOTER_TOP,
     HEIGHT,
     MARGIN,
-    ROW_HEIGHT,
-    ROW_TOP,
+    OUTPUT_CAPTION_TOP,
+    OUTPUT_TOP,
+    OUTPUT_WIDTH,
+    RESULTS_TOP,
     SEPARATOR_TOP,
     WIDTH,
 };
 use super::step_row::{StepRow, StepView};
-use crate::{system_theme, theme};
-use crate::view::icons;
+use crate::format::{file_name, format_count};
+use crate::theme;
 use crate::types::{
-    DiffResult,
+    DiffFile,
     Message,
-    Shot,
+    ShotFile,
     State,
     Step,
     Task,
 };
-use crate::view::format::{file_name, format_count};
 use crate::view::widgets::{
+    app_icon,
     button,
     caption,
     field,
@@ -60,16 +63,16 @@ impl CaptureWindow {
             .with_label("Rustshot")
             .center_screen();
         window.set_color(theme::BACKGROUND);
-        window.set_icon(icons::app());
+        window.set_icon(app_icon());
 
         // Closing this window closes the results window too.
         window.set_callback(|_| app::quit());
 
-        caption(MARGIN, 14, "Output folder");
-        let mut output_field = field(MARGIN, 34, BUTTON_X - MARGIN - 10);
+        caption(MARGIN, OUTPUT_CAPTION_TOP, "Output folder");
+        let mut output_field = field(MARGIN, OUTPUT_TOP, OUTPUT_WIDTH);
         output_field.set_value(output);
 
-        let mut browse = button(BUTTON_X, 34, BUTTON_WIDTH, "Browse…");
+        let mut browse = button(BUTTON_X, OUTPUT_TOP, BUTTON_WIDTH, "Browse…");
         browse.emit(sender, Message::Browse);
 
         // Line between the output folder and the steps.
@@ -102,20 +105,14 @@ impl CaptureWindow {
         );
         diff.button.emit(sender, Message::Compare);
 
-        let results_top = ROW_TOP + 2 * ROW_HEIGHT + 66;
-        let mut results = button(
-            BUTTON_X, 
-            results_top, 
-            BUTTON_WIDTH, 
-            "View results"
-        );
+        let mut results = button(BUTTON_X, RESULTS_TOP, BUTTON_WIDTH, "View results");
         results.emit(sender, Message::ViewResults);
 
         let (status, clear) = footer(sender);
 
         window.end();
         window.show();
-        system_theme::dark_title_bar(window.raw_handle());
+        theme::dark_title_bar(window.raw_handle());
 
         CaptureWindow {
             window,
@@ -220,25 +217,15 @@ impl CaptureWindow {
 
 // Bottom bar: status text and Clear.
 fn footer(sender: Sender<Message>) -> (Frame, Button) {
-    let mut background = Frame::new(
-        0, 
-        FOOTER_TOP, 
-        WIDTH, HEIGHT - 
-        FOOTER_TOP, 
-        None
-    );
+    let mut background = Frame::new(0, FOOTER_TOP, WIDTH, HEIGHT - FOOTER_TOP, None);
     background.set_frame(FrameType::FlatBox);
     background.set_color(theme::FOOTER);
 
     separator(0, FOOTER_TOP, WIDTH);
-    let status = line(MARGIN, FOOTER_TOP + 8, BUTTON_X - MARGIN - 10, 30);
+    let top = FOOTER_TOP + FOOTER_PADDING;
+    let status = line(MARGIN, top, OUTPUT_WIDTH, 30);
 
-    let mut clear = button(
-        BUTTON_X, 
-        FOOTER_TOP + 8, 
-        BUTTON_WIDTH, 
-        "Clear"
-    );
+    let mut clear = button(BUTTON_X, top, BUTTON_WIDTH, "Clear");
     clear.emit(sender, Message::Clear);
 
     (status, clear)
@@ -251,7 +238,7 @@ fn running(state: &State, step: Step) -> bool {
 }
 
 
-fn shot_info(shot: &Shot) -> String {
+fn shot_info(shot: &ShotFile) -> String {
     let summary = &shot.snapshot.summary;
 
     format!(
@@ -263,7 +250,7 @@ fn shot_info(shot: &Shot) -> String {
 }
 
 
-fn diff_info(result: &DiffResult) -> String {
+fn diff_info(result: &DiffFile) -> String {
     format!(
         "{} changes · {}",
         format_count(result.diff.summary.total),

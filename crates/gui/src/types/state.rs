@@ -1,68 +1,27 @@
-use std::path::PathBuf;
-use std::sync::Arc;
-
-use kernel::{Snapshot, SnapshotDiff};
-
-
-#[derive(
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq
-)]
-pub(crate) enum Step {
-    First,
-    Second,
-}
+use super::files::{DiffFile, ShotFile};
+use super::status::Status;
+use super::task::Task;
 
 
-// Work running in a background thread.
-#[derive(
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq
-)]
-pub(crate) enum Task {
-    Shoot(Step),
-    OpenShot(Step),
-    Compare,
-    OpenDiff,
-}
-
-
-#[derive(Debug, Clone)]
-pub(crate) struct Shot {
-    pub snapshot: Arc<Snapshot>,
-    pub path: PathBuf,
-}
-
-
-// A diff from a comparison, or opened from a file.
-#[derive(Debug, Clone)]
-pub(crate) struct DiffResult {
-    pub diff: Arc<SnapshotDiff>,
-    pub path: PathBuf,
-}
-
-
-// Text of the bottom bar.
-#[derive(Debug, Clone, Default)]
-pub(crate) struct Status {
-    pub text: String,
-    pub error: bool,
-}
-
-
-// Everything the windows show. The widgets never keep state of their own,
-// except the text the user types.
+// Everything the capture window shows. The widgets keep no state of their
+// own, except the text the user types. The results window keeps its filter
+// and its rows: nothing else depends on them.
 #[derive(Debug, Clone, Default)]
 pub(crate) struct State {
-    pub first: Option<Shot>,
-    pub second: Option<Shot>,
-    pub diff: Option<DiffResult>,
+    pub first: Option<ShotFile>,
+    pub second: Option<ShotFile>,
+    pub diff: Option<DiffFile>,
     pub busy: Option<Task>,
     pub status: Status,
+}
+
+
+impl State {
+    // State at start, and after Clear.
+    pub(crate) fn ready() -> Self {
+        State {
+            status: Status::info("Ready"),
+            ..State::default()
+        }
+    }
 }

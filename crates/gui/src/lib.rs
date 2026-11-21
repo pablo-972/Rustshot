@@ -1,8 +1,7 @@
 //! Graphical interface.
 
 mod app;
-mod system_theme;
-mod tasks;
+mod format;
 mod theme;
 mod types;
 mod view;

@@ -1,31 +1,16 @@
 use fltk::app::Sender;
 
-use super::actions::{
-    self,
-    failure,
-    info,
-};
+use super::actions;
+use crate::format::{file_name, format_count};
 use crate::types::{
-    DiffResult,
+    DiffFile,
     Message,
-    Shot,
+    ShotFile,
     State,
+    Status,
     Step,
 };
-use crate::view::{
-    Windows, 
-    file_name, 
-    format_count
-};
-
-
-// State at start, and after Clear.
-pub(super) fn ready() -> State {
-    State {
-        status: info("Ready"),
-        ..State::default()
-    }
-}
+use crate::view::Windows;
 
 
 pub(super) fn update(
@@ -43,7 +28,7 @@ pub(super) fn update(
         Message::OpenDiff => actions::open_diff(state, windows, sender),
 
         Message::Clear => {
-            *state = ready();
+            *state = State::ready();
             windows.results.hide();
         }
 
@@ -62,35 +47,35 @@ pub(super) fn update(
 fn shot_done(
     state: &mut State,
     step: Step,
-    result: Result<Shot, String>,
+    result: Result<ShotFile, String>,
     action: &str
 ) {
     state.busy = None;
 
     match result {
         Ok(shot) => {
-            state.status = info(&format!("{action} {}", file_name(&shot.path)));
+            state.status = Status::info(&format!("{action} {}", file_name(&shot.path)));
 
             match step {
                 Step::First => state.first = Some(shot),
                 Step::Second => state.second = Some(shot),
             }
         }
-        Err(error) => state.status = failure(&error),
+        Err(error) => state.status = Status::error(&error),
     }
 }
 
 
-fn compare_done(state: &mut State, result: Result<DiffResult, String>) {
+fn compare_done(state: &mut State, result: Result<DiffFile, String>) {
     state.busy = None;
 
     match result {
         Ok(diff) => {
             let total = format_count(diff.diff.summary.total);
-            state.status = info(&format!("{total} changes found"));
+            state.status = Status::info(&format!("{total} changes found"));
             state.diff = Some(diff);
         }
-        Err(error) => state.status = failure(&error),
+        Err(error) => state.status = Status::error(&error),
     }
 }
 
@@ -98,17 +83,17 @@ fn compare_done(state: &mut State, result: Result<DiffResult, String>) {
 fn diff_opened(
     state: &mut State,
     windows: &mut Windows,
-    result: Result<DiffResult, String>
+    result: Result<DiffFile, String>
 ) {
     state.busy = None;
 
     match result {
         Ok(diff) => {
-            state.status = info(&format!("Opened {}", file_name(&diff.path)));
+            state.status = Status::info(&format!("Opened {}", file_name(&diff.path)));
             windows.results.load(&diff);
             windows.results.show();
             state.diff = Some(diff);
         }
-        Err(error) => state.status = failure(&error),
+        Err(error) => state.status = Status::error(&error),
     }
 }

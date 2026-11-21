@@ -19,4 +19,5 @@ pub enum SnapshotError {
     Write {path: PathBuf, #[source] source: io::Error},
 }
 
+
 pub type Result<T> = std::result::Result<T, SnapshotError>;

@@ -1,5 +1,4 @@
 use fltk::button::Button;
-use fltk::draw;
 use fltk::enums::{Align, FrameType};
 use fltk::frame::Frame;
 use fltk::input::Input;
@@ -8,11 +7,11 @@ use fltk::prelude::*;
 use crate::theme;
 
 
-pub(super) const FIELD_HEIGHT: i32 = 30;
+pub(crate) const FIELD_HEIGHT: i32 = 30;
 
 
 // Small grey text above a field.
-pub(super) fn caption(x: i32, y: i32, text: &str) {
+pub(crate) fn caption(x: i32, y: i32, text: &str) {
     let mut frame = Frame::new(x, y, 300, 18, None);
     frame.set_label(text);
     frame.set_label_size(12);
@@ -22,7 +21,7 @@ pub(super) fn caption(x: i32, y: i32, text: &str) {
 
 
 // One-line text, such as a status or a result, cut if it does not fit.
-pub(super) fn line(x: i32, y: i32, w: i32, h: i32) -> Frame {
+pub(crate) fn line(x: i32, y: i32, w: i32, h: i32) -> Frame {
     let mut frame = Frame::new(x, y, w, h, None);
     frame.set_align(Align::Left | Align::Inside | Align::Clip);
     frame.set_label_size(12);
@@ -30,7 +29,7 @@ pub(super) fn line(x: i32, y: i32, w: i32, h: i32) -> Frame {
 }
 
 
-pub(super) fn field(x: i32, y: i32, w: i32) -> Input {
+pub(crate) fn field(x: i32, y: i32, w: i32) -> Input {
     let mut input = Input::new(x, y, w, FIELD_HEIGHT, None);
     input.set_frame(theme::OUTLINE_BOX);
     input.set_color(theme::FIELD);
@@ -41,7 +40,7 @@ pub(super) fn field(x: i32, y: i32, w: i32) -> Input {
 }
 
 
-pub(super) fn button(
+pub(crate) fn button(
     x: i32,
     y: i32,
     w: i32,
@@ -56,7 +55,7 @@ pub(super) fn button(
 
 
 // Primary: blue, for the next thing to do. Secondary: white with a border.
-pub(super) fn style_button(button: &mut Button, primary: bool) {
+pub(crate) fn style_button(button: &mut Button, primary: bool) {
     if primary {
         button.set_frame(theme::FILLED_BOX);
         button.set_down_frame(theme::FILLED_BOX);
@@ -74,7 +73,7 @@ pub(super) fn style_button(button: &mut Button, primary: bool) {
 
 
 // Selected: soft blue. Not selected: like a secondary button.
-pub(super) fn style_chip(button: &mut Button, selected: bool) {
+pub(crate) fn style_chip(button: &mut Button, selected: bool) {
     button.set_frame(theme::OUTLINE_BOX);
     button.set_down_frame(theme::OUTLINE_BOX);
     button.set_selection_color(theme::PRESSED);
@@ -89,44 +88,13 @@ pub(super) fn style_chip(button: &mut Button, selected: bool) {
 }
 
 
-pub(super) fn separator(x: i32, y: i32, w: i32) {
+pub(crate) fn separator(x: i32, y: i32, w: i32) {
     let mut line = Frame::new(x, y, w, 1, None);
     line.set_frame(FrameType::FlatBox);
     line.set_color(theme::BORDER);
 }
 
 
-// Round step number that turns into a check mark when the step is done.
-pub(super) fn badge(x: i32, y: i32, number: i32) -> Frame {
-    let mut frame = Frame::new(x, y, 26, 26, None);
-    frame.set_frame(FrameType::NoBox);
-    frame.set_color(theme::CARD);
-
-    let number = number.to_string();
-    frame.draw(move |f| {
-        let (x, y, w, h) = (f.x(), f.y(), f.w(), f.h());
-        let done = f.color() == theme::SUCCESS_BG;
-
-        draw::set_draw_color(f.color());
-        draw::draw_pie(x, y, w, h, 0.0, 360.0);
-
-        if done {
-            draw::set_draw_color(theme::SUCCESS);
-            draw::set_line_style(draw::LineStyle::Solid, 2);
-            draw::draw_line(x + 8, y + 13, x + 11, y + 17);
-            draw::draw_line(x + 11, y + 17, x + 18, y + 9);
-            draw::set_line_style(draw::LineStyle::Solid, 0);
-        } else {
-            draw::set_draw_color(theme::TEXT_SECONDARY);
-            draw::set_font(theme::FONT_BOLD, 12);
-            draw::draw_text2(&number, x, y, w, h, Align::Center);
-        }
-    });
-
-    frame
-}
-
-
-pub(super) fn set_enabled<W: WidgetExt>(widget: &mut W, enabled: bool) {
+pub(crate) fn set_enabled<W: WidgetExt>(widget: &mut W, enabled: bool) {
     if enabled { widget.activate(); } else { widget.deactivate(); }
 }

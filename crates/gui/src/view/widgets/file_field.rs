@@ -5,8 +5,8 @@ use fltk::frame::Frame;
 use fltk::input::Input;
 use fltk::prelude::*;
 
+use super::basic::{FIELD_HEIGHT, set_enabled};
 use super::icons;
-use super::widgets::{FIELD_HEIGHT, set_enabled};
 use crate::theme;
 use crate::types::Message;
 
@@ -24,7 +24,7 @@ pub(crate) struct FileField {
 impl FileField {
     // FLTK inputs have no room for a button inside, so the field is made of
     // three pieces: the outline, the text and the button.
-    pub(super) fn new(
+    pub(crate) fn new(
         x: i32,
         y: i32,
         w: i32,
@@ -67,21 +67,21 @@ impl FileField {
         FileField { input, button }
     }
 
-    pub(super) fn value(&self) -> String {
+    pub(crate) fn value(&self) -> String {
         self.input.value().trim().to_string()
     }
 
-    pub(super) fn set_value(&mut self, text: &str) {
+    pub(crate) fn set_value(&mut self, text: &str) {
         self.input.set_value(text);
     }
 
     // The text and the button are enabled separately: a file can sometimes
     // be opened when the name cannot be changed, and the other way around.
-    pub(super) fn set_editable(&mut self, editable: bool) {
+    pub(crate) fn set_editable(&mut self, editable: bool) {
         set_enabled(&mut self.input, editable);
     }
 
-    pub(super) fn set_openable(&mut self, openable: bool) {
+    pub(crate) fn set_openable(&mut self, openable: bool) {
         set_enabled(&mut self.button, openable);
     }
 }

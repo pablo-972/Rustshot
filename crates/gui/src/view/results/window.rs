@@ -9,6 +9,7 @@ use fltk::window::Window;
 use super::layout::{
     CHIP_GAP,
     CHIP_WIDTH,
+    CHIPS_TOP,
     HEIGHT,
     LIST_PADDING,
     LIST_TOP,
@@ -17,13 +18,12 @@ use super::layout::{
     SYMBOL_WIDTH,
     WIDTH,
 };
-use super::rows::{FORMAT, Fit, Row, empty, rows};
-use crate::{system_theme, theme};
-use crate::view::icons;
-use crate::types::{DiffResult, Filter, Message};
-use crate::view::format::{file_name, format_count};
-use crate::view::search_field::search_field;
-use crate::view::widgets::{button, style_chip};
+use super::list::{FORMAT, Fit, empty, lines};
+use super::rows::{Row, rows};
+use crate::format::{file_name, format_count};
+use crate::theme;
+use crate::types::{DiffFile, Filter, Message};
+use crate::view::widgets::{app_icon, button, search_field, style_chip};
 
 
 // The filters, in the order of their buttons.
@@ -55,7 +55,7 @@ impl ResultsWindow {
             .with_label("Results")
             .center_screen();
         window.set_color(theme::BACKGROUND);
-        window.set_icon(icons::app());
+        window.set_icon(app_icon());
         window.make_resizable(true);
 
         let chips = FILTERS
@@ -63,7 +63,7 @@ impl ResultsWindow {
             .enumerate()
             .map(|(i, (filter, label))| {
                 let x = MARGIN + i as i32 * (CHIP_WIDTH + CHIP_GAP);
-                let mut chip = button(x, 12, CHIP_WIDTH, label);
+                let mut chip = button(x, CHIPS_TOP, CHIP_WIDTH, label);
                 chip.set_label_size(12);
                 chip.emit(sender, Message::Filter(*filter));
                 chip
@@ -109,7 +109,7 @@ impl ResultsWindow {
         }
     }
 
-    pub(crate) fn load(&mut self, result: &DiffResult) {
+    pub(crate) fn load(&mut self, result: &DiffFile) {
         let diff = &result.diff;
         let summary = &diff.summary.registry;
 
@@ -149,7 +149,7 @@ impl ResultsWindow {
         self.list.clear();
 
         for row in self.rows.iter().filter(|row| row.matches(self.filter, &query)) {
-            for line in row.lines(&fit) {
+            for line in lines(row, &fit) {
                 self.list.add(&line);
             }
         }
@@ -165,7 +165,7 @@ impl ResultsWindow {
         self.window.show();
 
         // Hiding the window destroys it in Windows, so each show needs it.
-        system_theme::dark_title_bar(self.window.raw_handle());
+        theme::dark_title_bar(self.window.raw_handle());
     }
 
     pub(crate) fn hide(&mut self) {

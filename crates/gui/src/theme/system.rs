@@ -29,7 +29,7 @@ unsafe extern "system" {
 
 /// Whether the apps are dark. Read once: the theme does not change while
 /// Rustshot is open.
-pub(crate) fn dark() -> bool {
+pub(super) fn dark() -> bool {
     static DARK: OnceLock<bool> = OnceLock::new();
     *DARK.get_or_init(read)
 }

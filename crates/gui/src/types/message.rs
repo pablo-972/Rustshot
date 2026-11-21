@@ -1,5 +1,6 @@
+use super::files::{DiffFile, ShotFile};
 use super::filter::Filter;
-use super::state::{DiffResult, Shot, Step};
+use super::step::Step;
 
 
 // Everything that can happen: a button pressed, or a background task done.
@@ -20,8 +21,8 @@ pub(crate) enum Message {
     Refresh,
 
     // Background tasks. Errors come as text: the message must be Clone.
-    ShotDone(Step, Result<Shot, String>),
-    ShotOpened(Step, Result<Shot, String>),
-    CompareDone(Result<DiffResult, String>),
-    DiffOpened(Result<DiffResult, String>),
+    ShotDone(Step, Result<ShotFile, String>),
+    ShotOpened(Step, Result<ShotFile, String>),
+    CompareDone(Result<DiffFile, String>),
+    DiffOpened(Result<DiffFile, String>),
 }
