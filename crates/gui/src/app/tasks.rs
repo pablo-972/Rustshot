@@ -6,7 +6,12 @@ use std::thread;
 use fltk::app::Sender;
 use kernel::{Snapshot, SnapshotError};
 
-use crate::types::{DiffFile, Message, ShotFile, Step};
+use crate::types::{
+    DiffFile, 
+    Message, 
+    ShotFile, 
+    Step
+};
 
 
 pub(super) fn shoot(

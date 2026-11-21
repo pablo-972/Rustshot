@@ -4,6 +4,7 @@
 
 mod badge;
 mod layout;
+mod menu;
 mod step_row;
 mod window;
 

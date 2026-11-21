@@ -27,7 +27,7 @@ pub(crate) fn search_field(
     outline.set_color(theme::FIELD);
 
     let mut icon = Frame::new(x + 2, y + 2, ICON_WIDTH - 4, FIELD_HEIGHT - 4, None);
-    icon.set_image(icons::search());
+    icon.draw(|icon| icons::draw_centered(icons::search(theme::TEXT_SECONDARY), icon));
 
     let mut input = Input::new(
         x + ICON_WIDTH,

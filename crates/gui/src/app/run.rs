@@ -10,11 +10,14 @@ use crate::view::Windows;
 
 pub fn run() -> anyhow::Result<()> {
     let app = App::default().with_scheme(Scheme::Base);
-    theme::apply();
+    let mut state = State::ready();
+    
+    theme::load_fonts();
+    theme::register_boxes();
+    theme::set_mode(state.theme);
 
     let (sender, receiver) = app::channel();
     let mut windows = Windows::new(sender, &default_output());
-    let mut state = State::ready();
 
     windows.capture.render(&state);
 

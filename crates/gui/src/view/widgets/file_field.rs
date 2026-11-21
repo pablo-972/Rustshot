@@ -5,7 +5,7 @@ use fltk::frame::Frame;
 use fltk::input::Input;
 use fltk::prelude::*;
 
-use super::basic::{FIELD_HEIGHT, set_enabled};
+use super::basic::{FIELD_HEIGHT, set_editable, set_enabled};
 use super::icons;
 use crate::theme;
 use crate::types::Message;
@@ -56,11 +56,16 @@ impl FileField {
             FIELD_HEIGHT - 4,
             None
         );
-        button.set_frame(FrameType::FlatBox);
-        button.set_down_frame(FrameType::FlatBox);
+        // Our filled box keeps its color when the button is disabled, so it
+        // does not stand out from the field.
+        button.set_frame(theme::FILLED_BOX);
+        button.set_down_frame(theme::FILLED_BOX);
         button.set_color(theme::FIELD);
         button.set_selection_color(theme::PRESSED);
-        button.set_image(icons::folder_open());
+        button.draw(|button| {
+            let color = if button.active() { theme::TEXT_SECONDARY } else { theme::TEXT_MUTED };
+            icons::draw_centered(icons::folder_open(color), button);
+        });
         button.set_tooltip(tooltip);
         button.emit(sender, message);
 
@@ -78,7 +83,7 @@ impl FileField {
     // The text and the button are enabled separately: a file can sometimes
     // be opened when the name cannot be changed, and the other way around.
     pub(crate) fn set_editable(&mut self, editable: bool) {
-        set_enabled(&mut self.input, editable);
+        set_editable(&mut self.input, editable);
     }
 
     pub(crate) fn set_openable(&mut self, openable: bool) {

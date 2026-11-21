@@ -11,6 +11,7 @@ pub(super) use basic::{
     field,
     line,
     separator,
+    set_editable,
     set_enabled,
     style_button,
     style_chip,

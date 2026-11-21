@@ -165,7 +165,16 @@ impl ResultsWindow {
         self.window.show();
 
         // Hiding the window destroys it in Windows, so each show needs it.
-        theme::dark_title_bar(self.window.raw_handle());
+        theme::style_title_bar(self.window.raw_handle());
+    }
+
+    // After a change of theme: the colors are already new.
+    pub(crate) fn restyle(&mut self) {
+        if self.window.shown() {
+            theme::style_title_bar(self.window.raw_handle());
+        }
+
+        self.window.redraw();
     }
 
     pub(crate) fn hide(&mut self) {

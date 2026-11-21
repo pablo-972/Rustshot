@@ -2,7 +2,7 @@ use fltk::app::Sender;
 
 use super::actions;
 use crate::format::{file_name, format_count};
-use crate::view::Windows;
+use crate::theme;
 use crate::types::{
     DiffFile,
     Message,
@@ -11,6 +11,7 @@ use crate::types::{
     Status,
     Step,
 };
+use crate::view::{self, Windows};
 
 
 pub(super) fn update(
@@ -28,9 +29,17 @@ pub(super) fn update(
         Message::OpenDiff => actions::open_diff(state, windows, sender),
 
         Message::Clear => {
-            *state = State::ready();
+            *state = State { theme: state.theme, ..State::ready() };
             windows.results.hide();
         }
+
+        Message::Theme(mode) => {
+            state.theme = mode;
+            theme::set_mode(mode);
+            windows.restyle();
+        }
+
+        Message::About => view::about(),
 
         Message::Filter(filter) => windows.results.set_filter(filter),
         Message::Refresh => windows.results.render(),

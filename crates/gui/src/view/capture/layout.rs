@@ -9,9 +9,12 @@ pub(super) const GAP: i32 = 10;
 pub(super) const BUTTON_WIDTH: i32 = 140;
 pub(super) const BUTTON_X: i32 = WIDTH - MARGIN - BUTTON_WIDTH;
 
-// Output folder, at the top.
-pub(super) const OUTPUT_CAPTION_TOP: i32 = 14;
-pub(super) const OUTPUT_TOP: i32 = 34;
+// Menu bar, at the very top.
+pub(super) const MENU_HEIGHT: i32 = 24;
+
+// Output folder, below the menu bar.
+pub(super) const OUTPUT_CAPTION_TOP: i32 = MENU_HEIGHT + 14;
+pub(super) const OUTPUT_TOP: i32 = MENU_HEIGHT + 34;
 pub(super) const OUTPUT_WIDTH: i32 = BUTTON_X - MARGIN - GAP;
 
 // Fields of the steps, at the right of their number.
@@ -19,7 +22,7 @@ pub(super) const FIELD_X: i32 = 60;
 pub(super) const FIELD_WIDTH: i32 = BUTTON_X - FIELD_X - GAP;
 
 // Line between the output folder and the steps, with some room below it.
-pub(super) const SEPARATOR_TOP: i32 = 80;
+pub(super) const SEPARATOR_TOP: i32 = MENU_HEIGHT + 80;
 pub(super) const ROW_TOP: i32 = SEPARATOR_TOP + 14;
 pub(super) const ROW_HEIGHT: i32 = 84;
 

@@ -98,3 +98,12 @@ pub(crate) fn separator(x: i32, y: i32, w: i32) {
 pub(crate) fn set_enabled<W: WidgetExt>(widget: &mut W, enabled: bool) {
     if enabled { widget.activate(); } else { widget.deactivate(); }
 }
+
+
+// FLTK mixes the background of a disabled input with the window, which in the
+// dark theme leaves it darker than the rest of the field. Inputs are made
+// read-only instead, and only their text is muted.
+pub(crate) fn set_editable(input: &mut Input, editable: bool) {
+    input.set_readonly(!editable);
+    input.set_text_color(if editable { theme::TEXT } else { theme::TEXT_MUTED });
+}

@@ -20,6 +20,7 @@ use super::layout::{
     SEPARATOR_TOP,
     WIDTH,
 };
+use super::menu::{Menu, MenuView};
 use super::step_row::{StepRow, StepView};
 use crate::format::{file_name, format_count};
 use crate::theme;
@@ -38,6 +39,7 @@ use crate::view::widgets::{
     field,
     line,
     separator,
+    set_editable,
     set_enabled,
     style_button,
 };
@@ -45,6 +47,7 @@ use crate::view::widgets::{
 
 pub(crate) struct CaptureWindow {
     window: Window,
+    menu: Menu,
     output: Input,
     browse: Button,
     first: StepRow,
@@ -67,6 +70,8 @@ impl CaptureWindow {
 
         // Closing this window closes the results window too.
         window.set_callback(|_| app::quit());
+
+        let menu = Menu::new(sender);
 
         caption(MARGIN, OUTPUT_CAPTION_TOP, "Output folder");
         let mut output_field = field(MARGIN, OUTPUT_TOP, OUTPUT_WIDTH);
@@ -112,10 +117,11 @@ impl CaptureWindow {
 
         window.end();
         window.show();
-        theme::dark_title_bar(window.raw_handle());
+        theme::style_title_bar(window.raw_handle());
 
         CaptureWindow {
             window,
+            menu,
             output: output_field,
             browse,
             first,
@@ -163,13 +169,26 @@ impl CaptureWindow {
         [self.first.name(), self.second.name(), self.diff.name()]
     }
 
+    // After a change of theme: the colors are already new.
+    pub(crate) fn restyle(&mut self) {
+        theme::style_title_bar(self.window.raw_handle());
+        self.window.redraw();
+    }
+
     pub(crate) fn render(&mut self, state: &State) {
         let idle = state.busy.is_none();
         let first_done = state.first.is_some();
         let both_done = first_done && state.second.is_some();
         let has_diff = state.diff.is_some();
 
-        set_enabled(&mut self.output, idle);
+        self.menu.render(MenuView {
+            open_first: idle,
+            open_second: idle && first_done,
+            open_diff: idle,
+            theme: state.theme,
+        });
+
+        set_editable(&mut self.output, idle);
         set_enabled(&mut self.browse, idle);
         set_enabled(&mut self.clear, idle);
 
