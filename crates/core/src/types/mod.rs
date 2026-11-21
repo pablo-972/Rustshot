@@ -11,9 +11,11 @@ pub use diff::{
     DiffChanges,
     DiffMeta,
     DiffSummary,
+    NotCompared,
     RegistryDiff,
     RegistryDiffSummary,
     SnapshotDiff,
+    UnreadableIn,
     ValueChange,
     ValueEntry,
 };

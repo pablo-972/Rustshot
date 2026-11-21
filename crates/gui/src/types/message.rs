@@ -54,4 +54,5 @@ pub(crate) enum Filter {
     ValuesAdded,
     ValuesDeleted,
     Modified,
+    NotCompared,
 }

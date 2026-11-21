@@ -2,6 +2,7 @@
 
 use fltk::draw;
 use fltk::enums::Color;
+use rustshot_core::UnreadableIn;
 
 use super::rows::Row;
 use crate::theme;
@@ -44,11 +45,14 @@ impl Fit {
 // key, the value below, more space and a small gap without colour before the
 // next change. Long texts go on several lines.
 pub(super) fn lines(row: &Row, fit: &Fit) -> Vec<String> {
-    // All is the filter of no row: it only exists for the buttons.
-    let (symbol, color, background) = match row.filter {
-        Filter::KeysAdded | Filter::ValuesAdded => ("+", theme::SUCCESS, theme::ADDED_BG),
-        Filter::KeysDeleted | Filter::ValuesDeleted => ("-", theme::DANGER, theme::DELETED_BG),
-        Filter::Modified | Filter::All => ("~", theme::WARNING, theme::MODIFIED_BG),
+    // All is the filter of no row: it only exists for the buttons. A key that
+    // became unreadable in the 2nd shot stands out: it may have been locked.
+    let (symbol, color, background) = match (row.filter, row.unreadable_in) {
+        (Filter::KeysAdded | Filter::ValuesAdded, _) => ("+", theme::SUCCESS, theme::ADDED_BG),
+        (Filter::KeysDeleted | Filter::ValuesDeleted, _) => ("-", theme::DANGER, theme::DELETED_BG),
+        (Filter::Modified | Filter::All, _) => ("~", theme::WARNING, theme::MODIFIED_BG),
+        (Filter::NotCompared, Some(UnreadableIn::After)) => ("!", theme::WARNING, theme::CARD),
+        (Filter::NotCompared, _) => ("?", theme::TEXT_MUTED, theme::CARD),
     };
 
     // Each column of each line is filled, so the change is one coloured block.

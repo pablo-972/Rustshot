@@ -1,6 +1,6 @@
 //! The changes of a diff as rows: what each one says and how it is found.
 
-use rustshot_core::{RegistryValue, SnapshotDiff};
+use rustshot_core::{RegistryValue, SnapshotDiff, UnreadableIn};
 
 use super::list::FORMAT;
 use crate::types::Filter;
@@ -15,6 +15,7 @@ pub(super) struct Row {
     pub filter: Filter,
     pub key: String,
     pub text: String,
+    pub unreadable_in: Option<UnreadableIn>,
     search: String,
 }
 
@@ -25,15 +26,21 @@ impl Row {
 
         Row {
             filter,
+            unreadable_in: None,
             search: format!("{key} {text}").to_lowercase(),
             key,
             text,
         }
     }
 
-    // `query` must be lowercase already.
+    // `query` must be lowercase already. All shows the changes: the keys not
+    // compared are not changes, they only have their own filter.
     pub(super) fn matches(&self, filter: Filter, query: &str) -> bool {
-        let kind = filter == Filter::All || filter == self.filter;
+        let kind = match filter {
+            Filter::All => self.filter != Filter::NotCompared,
+            _ => filter == self.filter,
+        };
+
         kind && (query.is_empty() || self.search.contains(query))
     }
 }
@@ -70,6 +77,19 @@ pub(super) fn rows(diff: &SnapshotDiff) -> Vec<Row> {
             describe(&change.after)
         );
         rows.push(Row::new(Filter::Modified, &change.key, text));
+    }
+
+    for entry in &registry.not_compared {
+        let shot = match entry.unreadable_in {
+            UnreadableIn::Before => "the 1st shot",
+            UnreadableIn::After => "the 2nd shot",
+            UnreadableIn::Both => "either shot",
+        };
+
+        let text = format!("(not compared: could not be read in {shot})");
+        let mut row = Row::new(Filter::NotCompared, &entry.key, text);
+        row.unreadable_in = Some(entry.unreadable_in);
+        rows.push(row);
     }
 
     // Stable sort: the changes of a key stay in their order.
@@ -119,6 +139,8 @@ fn clean(text: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    use rustshot_core::NotCompared;
+
     use super::*;
 
 
@@ -129,6 +151,27 @@ mod tests {
         assert!(row.matches(Filter::All, ""));
         assert!(row.matches(Filter::KeysAdded, ""));
         assert!(!row.matches(Filter::KeysDeleted, ""));
+    }
+
+    #[test]
+    fn keys_not_compared_say_in_which_shot() {
+        let mut diff = SnapshotDiff::default();
+        diff.changes.registry.not_compared.push(NotCompared {
+            key: r"HKLM\Locked".to_string(),
+            unreadable_in: UnreadableIn::After,
+        });
+        let rows = rows(&diff);
+
+        assert_eq!(rows[0].unreadable_in, Some(UnreadableIn::After));
+        assert!(rows[0].text.contains("the 2nd shot"));
+    }
+
+    #[test]
+    fn keys_not_compared_only_show_with_their_filter() {
+        let row = Row::new(Filter::NotCompared, r"HKLM\SAM\SAM", String::new());
+
+        assert!(!row.matches(Filter::All, ""));
+        assert!(row.matches(Filter::NotCompared, ""));
     }
 
     #[test]

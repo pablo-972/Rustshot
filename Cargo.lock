@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "Rustshot"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "embed-resource",
@@ -312,7 +312,7 @@ dependencies = [
 
 [[package]]
 name = "rustshot-cli"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -321,7 +321,7 @@ dependencies = [
 
 [[package]]
 name = "rustshot-core"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -331,7 +331,7 @@ dependencies = [
 
 [[package]]
 name = "rustshot-gui"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "fltk",

@@ -27,13 +27,14 @@ use crate::view::widgets::{app_icon, button, search_field, style_chip};
 
 
 // The filters, in the order of their buttons.
-const FILTERS: [(Filter, &str); 6] = [
+const FILTERS: [(Filter, &str); 7] = [
     (Filter::All, "All"),
     (Filter::KeysAdded, "Keys added"),
     (Filter::KeysDeleted, "Keys deleted"),
     (Filter::ValuesAdded, "Values added"),
     (Filter::ValuesDeleted, "Values deleted"),
     (Filter::Modified, "Modified"),
+    (Filter::NotCompared, "Not compared"),
 ];
 
 
@@ -119,6 +120,7 @@ impl ResultsWindow {
             summary.values_added,
             summary.values_deleted,
             summary.values_modified,
+            summary.not_compared,
         ];
 
         for (chip, ((_, label), count)) in self.chips.iter_mut().zip(FILTERS.iter().zip(counts)) {

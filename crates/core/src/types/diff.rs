@@ -98,7 +98,7 @@ pub struct RegistryDiff {
     /// Keys that could not be read in one of the snapshots, so they and their
     /// subkeys were not compared.
     #[serde(default)]
-    pub not_compared: Vec<String>,
+    pub not_compared: Vec<NotCompared>,
 }
 
 #[derive(
@@ -128,4 +128,35 @@ pub struct ValueChange {
     pub name: String,
     pub before: RegistryValue,
     pub after: RegistryValue,
+}
+
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Serialize,
+    Deserialize
+)]
+pub struct NotCompared {
+    pub key: String,
+    pub unreadable_in: UnreadableIn,
+}
+
+// Unreadable only in the second snapshot is the suspicious case: the key may
+// have been locked between the two shots.
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Serialize,
+    Deserialize
+)]
+#[serde(rename_all = "snake_case")]
+pub enum UnreadableIn {
+    Before,
+    After,
+    Both,
 }

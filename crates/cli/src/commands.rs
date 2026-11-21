@@ -3,6 +3,7 @@ use std::time::Instant;
 
 use anyhow::Result;
 use clap::Parser;
+use rustshot_core::UnreadableIn;
 
 use crate::arguments::{Cli, Command};
 
@@ -60,12 +61,27 @@ fn run_diff(
     let diff = rustshot_core::diff(&before, &after);
     rustshot_core::save(&diff, output)?;
 
-    eprintln!("Keys added:      {}", diff.summary.registry.keys_added);
-    eprintln!("Keys deleted:    {}", diff.summary.registry.keys_deleted);
-    eprintln!("Values added:    {}", diff.summary.registry.values_added);
-    eprintln!("Values deleted:  {}", diff.summary.registry.values_deleted);
-    eprintln!("Values modified: {}", diff.summary.registry.values_modified);
-    eprintln!("Not compared:    {}", diff.summary.registry.not_compared);
+    let summary = &diff.summary.registry;
+
+    // Unreadable only in the 2nd shot is worth a look: the key may have been
+    // locked between the two shots.
+    let locked = diff.changes.registry.not_compared
+        .iter()
+        .filter(|entry| entry.unreadable_in == UnreadableIn::After)
+        .count();
+
+    let not_compared = if locked > 0 {
+        format!("{} ({locked} unreadable only in the 2nd shot)", summary.not_compared)
+    } else {
+        summary.not_compared.to_string()
+    };
+
+    eprintln!("Keys added:      {}", summary.keys_added);
+    eprintln!("Keys deleted:    {}", summary.keys_deleted);
+    eprintln!("Values added:    {}", summary.values_added);
+    eprintln!("Values deleted:  {}", summary.values_deleted);
+    eprintln!("Values modified: {}", summary.values_modified);
+    eprintln!("Not compared:    {not_compared}");
     eprintln!("Diff saved to    {}", output.display());
 
     Ok(())

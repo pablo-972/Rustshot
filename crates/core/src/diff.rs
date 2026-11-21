@@ -48,14 +48,19 @@ fn summarize(registry: &RegistryDiff) -> DiffSummary {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::types::{NotCompared, UnreadableIn};
 
+
+    fn not_compared(key: &str) -> NotCompared {
+        NotCompared { key: key.to_string(), unreadable_in: UnreadableIn::Both }
+    }
 
     #[test]
     fn total_counts_changes_but_not_what_was_not_compared() {
         let registry = RegistryDiff {
             keys_added: vec!["a".into(), "b".into()],
             keys_deleted: vec!["c".into()],
-            not_compared: vec!["d".into(), "e".into()],
+            not_compared: vec![not_compared("d"), not_compared("e")],
             ..RegistryDiff::default()
         };
         let summary = summarize(&registry);

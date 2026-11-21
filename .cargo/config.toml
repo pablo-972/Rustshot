@@ -36,12 +36,15 @@ rustflags = [
     "link-arg=-static",
 ]
 
+# The 32-bit .exe can use up to 4 GB instead of 2 GB on 64-bit Windows.
 [target.i686-win7-windows-gnu]
 rustflags = [
     "-C",
     "target-feature=+crt-static",
     "-C",
     "link-arg=-static",
+    "-C",
+    "link-arg=-Wl,--large-address-aware",
 ]
 
 # C/C++ compilers for the GUI (FLTK). The `cc` crate does not know the win7

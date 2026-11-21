@@ -1,9 +1,11 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::types::{
+    NotCompared,
     RegistryDiff,
     RegistryKey,
     SnapshotData,
+    UnreadableIn,
     ValueChange,
     ValueEntry,
 };
@@ -13,14 +15,21 @@ pub(crate) fn compare(before: &SnapshotData, after: &SnapshotData) -> RegistryDi
     let mut diff = RegistryDiff::default();
     let empty = RegistryKey::default();
 
-    // Keys that could not be read in either snapshot. What is below them is
-    // unknown in one of the two, so it is left out instead of showing up as
-    // added or deleted.
-    let skipped: BTreeSet<&str> = before.inaccessible
-        .iter()
-        .chain(&after.inaccessible)
-        .map(String::as_str)
-        .collect();
+    // Keys that could not be read in either snapshot, and in which. What is
+    // below them is unknown in one of the two, so it is left out instead of
+    // showing up as added or deleted.
+    let mut skipped = BTreeMap::new();
+
+    for key in &before.inaccessible {
+        skipped.insert(key.as_str(), UnreadableIn::Before);
+    }
+
+    for key in &after.inaccessible {
+        skipped
+            .entry(key.as_str())
+            .and_modify(|unreadable_in| *unreadable_in = UnreadableIn::Both)
+            .or_insert(UnreadableIn::After);
+    }
 
     for path in union(&before.registry, &after.registry) {
         if inside(path, &skipped) {
@@ -46,7 +55,11 @@ pub(crate) fn compare(before: &SnapshotData, after: &SnapshotData) -> RegistryDi
         );
     }
 
-    diff.not_compared = skipped.into_iter().map(str::to_string).collect();
+    diff.not_compared = skipped
+        .into_iter()
+        .map(|(key, unreadable_in)| NotCompared { key: key.to_string(), unreadable_in })
+        .collect();
+
     diff
 }
 
@@ -86,11 +99,11 @@ fn compare_values(
 }
 
 // Whether `path` is one of `skipped` or is below one of them.
-fn inside(path: &str, skipped: &BTreeSet<&str>) -> bool {
+fn inside(path: &str, skipped: &BTreeMap<&str, UnreadableIn>) -> bool {
     let mut current = path;
 
     loop {
-        if skipped.contains(current) {
+        if skipped.contains_key(current) {
             return true;
         }
 
@@ -112,8 +125,6 @@ fn union<'a, V>(
 
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeMap;
-
     use super::*;
     use crate::types::RegistryValue;
 
@@ -197,12 +208,31 @@ mod tests {
 
         assert!(diff.keys_added.is_empty());
         assert!(diff.values_added.is_empty());
-        assert_eq!(diff.not_compared, [r"HKLM\SAM\SAM"]);
+        assert_eq!(diff.not_compared.len(), 1);
+        assert_eq!(diff.not_compared[0].key, r"HKLM\SAM\SAM");
+        assert_eq!(diff.not_compared[0].unreadable_in, UnreadableIn::Before);
+    }
+
+    #[test]
+    fn not_compared_says_in_which_shot_it_was_unreadable() {
+        let before = data(&[], &[r"HKLM\A", r"HKLM\C"]);
+        let after = data(&[], &[r"HKLM\B", r"HKLM\C"]);
+        let found: Vec<_> = compare(&before, &after)
+            .not_compared
+            .into_iter()
+            .map(|entry| (entry.key, entry.unreadable_in))
+            .collect();
+
+        assert_eq!(found, [
+            (r"HKLM\A".to_string(), UnreadableIn::Before),
+            (r"HKLM\B".to_string(), UnreadableIn::After),
+            (r"HKLM\C".to_string(), UnreadableIn::Both),
+        ]);
     }
 
     #[test]
     fn inside_checks_the_path_and_its_parents() {
-        let skipped = BTreeSet::from([r"HKLM\SAM\SAM"]);
+        let skipped = BTreeMap::from([(r"HKLM\SAM\SAM", UnreadableIn::Both)]);
 
         assert!(inside(r"HKLM\SAM\SAM", &skipped));
         assert!(inside(r"HKLM\SAM\SAM\Domains\Account", &skipped));

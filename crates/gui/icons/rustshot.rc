@@ -1,2 +1,30 @@
-// Icon of the .exe, shown by Explorer and the taskbar.
+// Icon and version details of the .exe, shown by Explorer in the taskbar and
+// in Properties > Details. The version numbers come from Cargo, in build.rs.
+#include "version.h"
+
 1 ICON "rustshot.ico"
+
+1 VERSIONINFO
+FILEVERSION VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, 0
+PRODUCTVERSION VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, 0
+FILEOS 0x40004
+FILETYPE 0x1
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "FileDescription", "Rustshot: registry snapshots and diffs"
+            VALUE "FileVersion", VERSION
+            VALUE "InternalName", "Rustshot"
+            VALUE "LegalCopyright", "GNU Affero General Public License v3"
+            VALUE "OriginalFilename", "Rustshot.exe"
+            VALUE "ProductName", "Rustshot"
+            VALUE "ProductVersion", VERSION
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

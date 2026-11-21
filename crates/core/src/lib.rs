@@ -21,6 +21,7 @@ pub use types::{
     DiffChanges,
     DiffMeta,
     DiffSummary,
+    NotCompared,
     RegistryDiff,
     RegistryDiffSummary,
     RegistryKey,
@@ -31,6 +32,7 @@ pub use types::{
     SnapshotMeta,
     SnapshotSummary,
     SystemInfo,
+    UnreadableIn,
     ValueChange,
     ValueEntry,
 };

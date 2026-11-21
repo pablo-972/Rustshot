@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::panic::{self, AssertUnwindSafe};
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -12,7 +13,7 @@ use crate::types::{
     DiffFile,
     Message,
     ShotFile,
-    Step
+    Step,
 };
 
 
@@ -25,7 +26,7 @@ pub(super) fn shoot(
     tick(done.clone(), sender);
 
     thread::spawn(move || {
-        let result = take_shot(path, sender).map_err(|e| describe(&e));
+        let result = guarded(|| take_shot(path, sender).map_err(|e| describe(&e)));
         done.store(true, Ordering::Relaxed);
         sender.send(Message::ShotDone(step, result));
     });
@@ -38,10 +39,13 @@ pub(super) fn compare(
     sender: Sender<Message>
 ) {
     thread::spawn(move || {
-        let diff = rustshot_core::diff(&before, &after);
-        let result = rustshot_core::save(&diff, &path)
-            .map(|()| DiffFile { diff: Arc::new(diff), path })
-            .map_err(|e| describe(&e));
+        let result = guarded(|| {
+            let diff = rustshot_core::diff(&before, &after);
+
+            rustshot_core::save(&diff, &path)
+                .map(|()| DiffFile { diff: Arc::new(diff), path })
+                .map_err(|e| describe(&e))
+        });
 
         sender.send(Message::CompareDone(result));
     });
@@ -53,9 +57,11 @@ pub(super) fn open_shot(
     sender: Sender<Message>
 ) {
     thread::spawn(move || {
-        let result = rustshot_core::load(&path)
-            .map(|snap| ShotFile { snapshot: Arc::new(snap), path })
-            .map_err(|e| describe(&e));
+        let result = guarded(|| {
+            rustshot_core::load(&path)
+                .map(|snap| ShotFile { snapshot: Arc::new(snap), path })
+                .map_err(|e| describe(&e))
+        });
 
         sender.send(Message::ShotOpened(step, result));
     });
@@ -63,9 +69,11 @@ pub(super) fn open_shot(
 
 pub(super) fn open_diff(path: PathBuf, sender: Sender<Message>) {
     thread::spawn(move || {
-        let result = rustshot_core::load(&path)
-            .map(|diff| DiffFile { diff: Arc::new(diff), path })
-            .map_err(|e| describe(&e));
+        let result = guarded(|| {
+            rustshot_core::load(&path)
+                .map(|diff| DiffFile { diff: Arc::new(diff), path })
+                .map_err(|e| describe(&e))
+        });
 
         sender.send(Message::DiffOpened(result));
     });
@@ -77,6 +85,13 @@ fn take_shot(path: PathBuf, sender: Sender<Message>) -> Result<ShotFile, rustsho
     rustshot_core::save(&snap, &path)?;
 
     Ok(ShotFile { snapshot: Arc::new(snap), path })
+}
+
+// Runs a task and turns a panic into an error. Otherwise its message would
+// never arrive: the window would stay busy and the tick would never stop.
+fn guarded<T>(task: impl FnOnce() -> Result<T, String>) -> Result<T, String> {
+    panic::catch_unwind(AssertUnwindSafe(task))
+        .unwrap_or_else(|_| Err("Unexpected error: the task stopped".to_string()))
 }
 
 // Sends a Tick every second until `done`: the capture only reports every
@@ -102,4 +117,23 @@ fn describe(error: &dyn Error) -> String {
     }
 
     text
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+
+    #[test]
+    fn a_result_passes_through() {
+        assert_eq!(guarded(|| Ok::<_, String>(5)), Ok(5));
+        assert_eq!(guarded(|| Err::<(), _>("cannot read".to_string())), Err("cannot read".into()));
+    }
+
+    #[test]
+    fn a_panic_becomes_an_error() {
+        let result: Result<(), String> = guarded(|| panic!("boom"));
+        assert!(result.is_err());
+    }
 }
