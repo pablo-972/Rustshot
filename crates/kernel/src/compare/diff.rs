@@ -2,13 +2,13 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use super::registry;
 use crate::types::{
-    Snapshot,
-    SnapshotDiff,
     DiffChanges,
     DiffMeta,
     DiffSummary,
     RegistryDiff,
     RegistryDiffSummary,
+    Snapshot,
+    SnapshotDiff,
 };
 
 

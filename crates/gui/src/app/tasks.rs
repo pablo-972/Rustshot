@@ -1,15 +1,17 @@
 use std::error::Error;
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
+use std::time::Duration;
 
 use fltk::app::Sender;
 use kernel::{Snapshot, SnapshotError};
 
 use crate::types::{
-    DiffFile, 
-    Message, 
-    ShotFile, 
+    DiffFile,
+    Message,
+    ShotFile,
     Step
 };
 
@@ -19,12 +21,15 @@ pub(super) fn shoot(
     path: PathBuf,
     sender: Sender<Message>
 ) {
+    let done = Arc::new(AtomicBool::new(false));
+    tick(done.clone(), sender);
+
     thread::spawn(move || {
-        let result = take_shot(path).map_err(|e| describe(&e));
+        let result = take_shot(path, sender).map_err(|e| describe(&e));
+        done.store(true, Ordering::Relaxed);
         sender.send(Message::ShotDone(step, result));
     });
 }
-
 
 pub(super) fn compare(
     before: Arc<Snapshot>,
@@ -42,7 +47,6 @@ pub(super) fn compare(
     });
 }
 
-
 pub(super) fn open_shot(
     step: Step,
     path: PathBuf,
@@ -57,7 +61,6 @@ pub(super) fn open_shot(
     });
 }
 
-
 pub(super) fn open_diff(path: PathBuf, sender: Sender<Message>) {
     thread::spawn(move || {
         let result = kernel::load(&path)
@@ -69,13 +72,23 @@ pub(super) fn open_diff(path: PathBuf, sender: Sender<Message>) {
 }
 
 
-fn take_shot(path: PathBuf) -> Result<ShotFile, SnapshotError> {
-    let snap = kernel::shot()?;
+fn take_shot(path: PathBuf, sender: Sender<Message>) -> Result<ShotFile, SnapshotError> {
+    let snap = kernel::shot(|captured| sender.send(Message::ShotProgress(captured)))?;
     kernel::save(&snap, &path)?;
 
     Ok(ShotFile { snapshot: Arc::new(snap), path })
 }
 
+// Sends a Tick every second until `done`: the capture only reports every
+// thousand keys, and saving the file reports nothing.
+fn tick(done: Arc<AtomicBool>, sender: Sender<Message>) {
+    thread::spawn(move || {
+        while !done.load(Ordering::Relaxed) {
+            thread::sleep(Duration::from_secs(1));
+            sender.send(Message::Tick);
+        }
+    });
+}
 
 // Error message with its causes, e.g. "cannot write C:\x: Access is denied".
 fn describe(error: &dyn Error) -> String {

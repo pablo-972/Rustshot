@@ -24,7 +24,6 @@ pub(super) fn system() -> SystemInfo {
     }
 }
 
-
 pub(super) fn device() -> DeviceInfo {
     DeviceInfo {
         hostname: variable("COMPUTERNAME"),
@@ -36,7 +35,6 @@ pub(super) fn device() -> DeviceInfo {
 
 // The CurrentVersion key. If it cannot be opened, every value reads as None.
 struct VersionKey(Option<RegKey>);
-
 
 impl VersionKey {
     fn open() -> Self {
@@ -67,7 +65,6 @@ fn version(key: &VersionKey) -> Option<String> {
     }
 }
 
-
 fn build(key: &VersionKey) -> Option<String> {
     let build = key.text("CurrentBuildNumber")?;
 
@@ -77,14 +74,12 @@ fn build(key: &VersionKey) -> Option<String> {
     }
 }
 
-
 // Architecture of the system, not of this program: a 32-bit program on
 // 64-bit Windows sees "x86" in PROCESSOR_ARCHITECTURE and the real one in
 // PROCESSOR_ARCHITEW6432.
 fn architecture() -> Option<String> {
     variable("PROCESSOR_ARCHITEW6432").or_else(|| variable("PROCESSOR_ARCHITECTURE"))
 }
-
 
 // An environment variable, or None if it is missing or empty.
 fn variable(name: &str) -> Option<String> {

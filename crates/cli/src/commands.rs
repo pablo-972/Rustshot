@@ -1,10 +1,10 @@
 use std::path::Path;
+use std::time::Instant;
 
 use anyhow::Result;
 use clap::Parser;
 
-use crate::arguments::Cli;
-use crate::arguments::Command;
+use crate::arguments::{Cli, Command};
 
 
 pub fn run() -> Result<()> {
@@ -15,17 +15,26 @@ pub fn run() -> Result<()> {
 
 fn execute(cli: Cli) -> Result<()> {
     match cli.command {
-        Command::Shot {output} => run_shot(&output),
-        Command::Compare {before, after, output} => {
-            run_compare(&before, &after, &output)
-        } 
+        Command::Shot { output } => run_shot(&output),
+        Command::Compare { before, after, output } => run_compare(&before, &after, &output),
     }
 }
 
 fn run_shot(output: &Path) -> Result<()> {
-    let snap = kernel::shot()?;
+    let started = Instant::now();
+
+    let snap = kernel::shot(|captured| {
+        eprint!(
+            "\rCapturing... {} keys, {} values, {} s",
+            captured.registry_keys,
+            captured.registry_values,
+            started.elapsed().as_secs()
+        );
+    })?;
+    eprintln!();
+
     kernel::save(&snap, output)?;
-    
+
     let summary = &snap.summary;
 
     eprintln!(

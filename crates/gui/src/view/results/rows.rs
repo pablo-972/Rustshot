@@ -9,6 +9,7 @@ use crate::types::Filter;
 // Bytes shown of a binary value before cutting it.
 const BINARY_PREVIEW: usize = 32;
 
+
 // One change of the diff, ready to be shown.
 pub(super) struct Row {
     pub filter: Filter,
@@ -16,7 +17,6 @@ pub(super) struct Row {
     pub text: String,
     search: String,
 }
-
 
 impl Row {
     fn new(filter: Filter, key: &str, text: String) -> Self {
@@ -83,7 +83,6 @@ fn name(name: &str) -> &str {
     if name.is_empty() { "(Default)" } else { name }
 }
 
-
 fn describe(value: &RegistryValue) -> String {
     match value {
         RegistryValue::Sz(text) => format!("Sz: {text}"),
@@ -95,7 +94,6 @@ fn describe(value: &RegistryValue) -> String {
         RegistryValue::Other { kind, bytes } => format!("Type {kind}: {}", preview(bytes)),
     }
 }
-
 
 // First bytes in hex, and the total size if it was cut.
 fn preview(bytes: &[u8]) -> String {
@@ -111,7 +109,6 @@ fn preview(bytes: &[u8]) -> String {
         hex
     }
 }
-
 
 // Tabs separate the columns, new lines end a line of the list and FORMAT
 // starts a code: none of them may appear inside the text.

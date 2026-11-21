@@ -13,7 +13,6 @@ const PERSONALIZE: &str = r"Software\Microsoft\Windows\CurrentVersion\Themes\Per
 const DARK_MODE: u32 = 20; // Since Windows 10 20H1
 const DARK_MODE_OLD: u32 = 19; // On older builds of Windows 10
 
-
 // Flags of SetWindowPos: keep the place, size and order of the window, do not
 // activate it, and draw its frame again.
 const FRAME_CHANGED: u32 = 0x0001 | 0x0002 | 0x0004 | 0x0010 | 0x0020;
@@ -28,7 +27,6 @@ unsafe extern "system" {
         size: u32
     ) -> i32;
 }
-
 
 #[link(name = "user32")]
 unsafe extern "system" {
@@ -52,7 +50,6 @@ pub(super) fn dark() -> bool {
         .and_then(|key| key.get_value::<u32, _>("AppsUseLightTheme"))
         .is_ok_and(|light| light == 0)
 }
-
 
 /// FLTK only draws inside the window: the title bar is drawn by Windows, and
 /// it stays light unless it is asked for a dark one.

@@ -11,7 +11,7 @@ use crate::view::Windows;
 pub fn run() -> anyhow::Result<()> {
     let app = App::default().with_scheme(Scheme::Base);
     let mut state = State::ready();
-    
+
     theme::load_fonts();
     theme::register_boxes();
     theme::set_mode(state.theme);

@@ -46,7 +46,6 @@ pub(crate) struct ResultsWindow {
     filter: Filter,
 }
 
-
 impl ResultsWindow {
     // Created hidden: it is shown with View results or Open diff.
     pub(crate) fn new(sender: Sender<Message>) -> Self {

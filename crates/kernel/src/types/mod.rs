@@ -2,33 +2,27 @@
 //!
 //! Defines every kind of type used
 
-mod snapshot;
-mod registry;
 mod diff;
+mod registry;
+mod snapshot;
 
+
+pub use diff::{
+    DiffChanges,
+    DiffMeta,
+    DiffSummary,
+    RegistryDiff,
+    RegistryDiffSummary,
+    SnapshotDiff,
+    ValueChange,
+    ValueEntry,
+};
+pub use registry::{RegistryKey, RegistryValue};
 pub use snapshot::{
+    DeviceInfo,
     Snapshot,
-    SnapshotMeta,
     SnapshotData,
+    SnapshotMeta,
     SnapshotSummary,
     SystemInfo,
-    DeviceInfo,
 };
-pub use registry::{
-    RegistryKey, 
-    RegistryValue
-};
-pub use diff::{
-    SnapshotDiff,
-    DiffMeta,
-    DiffChanges,
-    RegistryDiff, 
-    DiffSummary,
-    RegistryDiffSummary,
-    ValueEntry,
-    ValueChange, 
-};
-
-
-
-

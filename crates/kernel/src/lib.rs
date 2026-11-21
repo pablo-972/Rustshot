@@ -9,6 +9,7 @@ mod hex;
 mod storage;
 mod types;
 
+
 pub use capture::shot;
 pub use compare::compare;
 pub use error::SnapshotError;

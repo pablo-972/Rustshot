@@ -1,10 +1,6 @@
 use std::collections::BTreeMap;
 
-use winreg::types::FromRegValue;
-use winreg::{RegKey, RegValue};
 use winreg::enums::{
-    HKEY_CLASSES_ROOT,
-    HKEY_CURRENT_USER,
     HKEY_LOCAL_MACHINE,
     HKEY_USERS,
     KEY_READ,
@@ -15,47 +11,54 @@ use winreg::enums::{
     REG_QWORD,
     REG_SZ,
 };
+use winreg::types::FromRegValue;
+use winreg::{HKEY, RegKey, RegValue};
 
+use super::progress::Progress;
 use crate::error::Result;
-use crate::types::{RegistryKey, RegistryValue};
+use crate::types::{
+    RegistryKey,
+    RegistryValue,
+    SnapshotSummary
+};
 
 
-// Roots captured: the whole registry, like Regshot.
+// Roots captured: the whole registry.
 // HKCU is not listed: it is the current user's key inside HKU.
 // HKCR is not listed: it is a merged view of HKLM\SOFTWARE\Classes and
 // HKCU\Software\Classes, both already captured.
-const ROOTS: [&str; 2] = ["HKLM", "HKU"];
+const ROOTS: [(&str, HKEY); 2] = [
+    ("HKLM", HKEY_LOCAL_MACHINE),
+    ("HKU", HKEY_USERS),
+];
 
 
-pub(crate) fn capture() -> Result<BTreeMap<String, RegistryKey>> {
+pub(crate) fn capture(
+    report: &mut dyn FnMut(SnapshotSummary)
+) -> Result<BTreeMap<String, RegistryKey>> {
     let mut keys = BTreeMap::new();
-    for root in ROOTS { capture_root(root, &mut keys); }
+    let mut progress = Progress::new(report);
 
-    Ok(keys)
-}
-
-
-fn capture_root(root: &str, out: &mut BTreeMap<String, RegistryKey>) {
-    let (hive_name, sub) = root.split_once('\\').unwrap_or((root, ""));
-    let hive = match hive_name {
-        "HKLM" => HKEY_LOCAL_MACHINE,
-        "HKCU" => HKEY_CURRENT_USER,
-        "HKCR" => HKEY_CLASSES_ROOT,
-        "HKU" => HKEY_USERS,
-        _ => return,
-    };
-
-    // Keys that don't exist on this Windows version are skipped.
-    if let Ok(key) = RegKey::predef(hive).open_subkey_with_flags(sub, KEY_READ) {
-        walk(&key, root.to_string(), out);
+    for (name, hive) in ROOTS {
+        walk(&RegKey::
+            predef(hive), 
+            name.to_string(), 
+            &mut keys, 
+            &mut progress
+        );
     }
+
+    progress.finish(keys.len());
+    
+    Ok(keys)
 }
 
 
 fn walk(
     key: &RegKey,
     path: String,
-    out: &mut BTreeMap<String, RegistryKey>
+    out: &mut BTreeMap<String, RegistryKey>,
+    progress: &mut Progress
 ) {
     let values = key
         .enum_values()
@@ -65,13 +68,16 @@ fn walk(
 
     for sub in key.enum_keys().flatten() {
         if let Ok(child) = key.open_subkey_with_flags(&sub, KEY_READ) {
-            walk(&child, format!("{path}\\{sub}"), out);
+            walk(&child, format!("{path}\\{sub}"), out, progress);
         }
     }
 
-    out.insert(path, RegistryKey { values });
-}
+    let captured = RegistryKey { values };
+    let count = captured.values.len();
 
+    out.insert(path, captured);
+    progress.add(out.len(), count);
+}
 
 fn convert(value: &RegValue) -> RegistryValue {
     let typed = match value.vtype {
@@ -89,4 +95,3 @@ fn convert(value: &RegValue) -> RegistryValue {
         bytes: value.bytes.to_vec(),
     })
 }
-

@@ -4,25 +4,24 @@ use serde::{Deserialize, Serialize};
 
 
 #[derive(
-    Debug, 
-    Clone, 
-    Default, 
-    PartialEq, 
-    Eq, 
-    Serialize, 
+    Debug,
+    Clone,
+    Default,
+    PartialEq,
+    Eq,
+    Serialize,
     Deserialize
 )]
 pub struct RegistryKey {
     pub values: BTreeMap<String, RegistryValue>,
 }
 
-
 #[derive(
-    Debug, 
-    Clone, 
-    PartialEq, 
-    Eq, 
-    Serialize, 
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Serialize,
     Deserialize
 )]
 #[serde(tag = "type", content = "data")]

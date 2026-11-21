@@ -16,7 +16,6 @@ pub(crate) fn format_count(n: usize) -> String {
     out
 }
 
-
 // "C:\analysis\diff.json" -> "diff.json"
 pub(crate) fn file_name(path: &Path) -> String {
     path.file_name()

@@ -1,4 +1,4 @@
-// Positions and sizes of the capture window, in pixels.
+//! Positions and sizes of the capture window, in pixels.
 
 pub(super) const WIDTH: i32 = 560;
 pub(super) const MARGIN: i32 = 20;

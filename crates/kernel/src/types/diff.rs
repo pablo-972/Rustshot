@@ -4,12 +4,12 @@ use super::registry::RegistryValue;
 
 
 #[derive(
-    Debug, 
-    Clone, 
-    Default, 
-    PartialEq, 
-    Eq, 
-    Serialize, 
+    Debug,
+    Clone,
+    Default,
+    PartialEq,
+    Eq,
+    Serialize,
     Deserialize
 )]
 pub struct SnapshotDiff {
@@ -17,7 +17,6 @@ pub struct SnapshotDiff {
     pub summary: DiffSummary,
     pub changes: DiffChanges,
 }
-
 
 #[derive(
     Debug,
@@ -35,7 +34,6 @@ pub struct DiffMeta {
     pub after: u64,
 }
 
-
 #[derive(
     Debug,
     Clone,
@@ -49,14 +47,13 @@ pub struct DiffChanges {
     pub registry: RegistryDiff,
 }
 
-
 #[derive(
-    Debug, 
-    Clone, 
-    Default, 
-    PartialEq, 
-    Eq, 
-    Serialize, 
+    Debug,
+    Clone,
+    Default,
+    PartialEq,
+    Eq,
+    Serialize,
     Deserialize
 )]
 pub struct DiffSummary {
@@ -64,14 +61,13 @@ pub struct DiffSummary {
     pub total: usize,
 }
 
-
 #[derive(
-    Debug, 
-    Clone, 
-    Default, 
-    PartialEq, 
-    Eq, 
-    Serialize, 
+    Debug,
+    Clone,
+    Default,
+    PartialEq,
+    Eq,
+    Serialize,
     Deserialize
 )]
 pub struct RegistryDiffSummary {
@@ -82,14 +78,13 @@ pub struct RegistryDiffSummary {
     pub values_modified: usize,
 }
 
-
 #[derive(
-    Debug, 
-    Clone, 
-    Default, 
-    PartialEq, 
-    Eq, 
-    Serialize, 
+    Debug,
+    Clone,
+    Default,
+    PartialEq,
+    Eq,
+    Serialize,
     Deserialize
 )]
 pub struct RegistryDiff {
@@ -100,13 +95,12 @@ pub struct RegistryDiff {
     pub values_modified: Vec<ValueChange>,
 }
 
-
 #[derive(
-    Debug, 
-    Clone, 
-    PartialEq, 
-    Eq, 
-    Serialize, 
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Serialize,
     Deserialize
 )]
 pub struct ValueEntry {
@@ -115,13 +109,12 @@ pub struct ValueEntry {
     pub value: RegistryValue,
 }
 
-
 #[derive(
-    Debug, 
-    Clone, 
-    PartialEq, 
-    Eq, 
-    Serialize, 
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Serialize,
     Deserialize
 )]
 pub struct ValueChange {

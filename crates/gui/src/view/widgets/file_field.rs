@@ -20,7 +20,6 @@ pub(crate) struct FileField {
     button: Button,
 }
 
-
 impl FileField {
     // FLTK inputs have no room for a button inside, so the field is made of
     // three pieces: the outline, the text and the button.

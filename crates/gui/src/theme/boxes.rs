@@ -30,11 +30,9 @@ fn draw_outline_box(x: i32, y: i32, w: i32, h: i32, color: Color) {
     draw::draw_rbox(x, y, w, h, RADIUS, false, BORDER);
 }
 
-
 fn draw_filled_box(x: i32, y: i32, w: i32, h: i32, color: Color) {
     draw::draw_rbox(x, y, w, h, RADIUS, true, color);
 }
-
 
 // Square, with a border: the menus that drop down from the menu bar.
 fn draw_menu_box(x: i32, y: i32, w: i32, h: i32, color: Color) {

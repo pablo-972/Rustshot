@@ -24,7 +24,6 @@ pub fn save<T: Serialize>(value: &T, path: &Path) -> Result<()> {
     })
 }
 
-
 pub fn load<T: DeserializeOwned>(path: &Path) -> Result<T> {
     let json = fs::read(path).map_err(|source| SnapshotError::Read {
         path: path.to_path_buf(),

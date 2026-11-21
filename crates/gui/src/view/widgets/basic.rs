@@ -19,7 +19,6 @@ pub(crate) fn caption(x: i32, y: i32, text: &str) {
     frame.set_align(Align::Left | Align::Inside);
 }
 
-
 // One-line text, such as a status or a result, cut if it does not fit.
 pub(crate) fn line(x: i32, y: i32, w: i32, h: i32) -> Frame {
     let mut frame = Frame::new(x, y, w, h, None);
@@ -27,7 +26,6 @@ pub(crate) fn line(x: i32, y: i32, w: i32, h: i32) -> Frame {
     frame.set_label_size(12);
     frame
 }
-
 
 pub(crate) fn field(x: i32, y: i32, w: i32) -> Input {
     let mut input = Input::new(x, y, w, FIELD_HEIGHT, None);
@@ -38,7 +36,6 @@ pub(crate) fn field(x: i32, y: i32, w: i32) -> Input {
     input.set_text_color(theme::TEXT);
     input
 }
-
 
 pub(crate) fn button(
     x: i32,
@@ -52,7 +49,6 @@ pub(crate) fn button(
     style_button(&mut button, false);
     button
 }
-
 
 // Primary: blue, for the next thing to do. Secondary: white with a border.
 pub(crate) fn style_button(button: &mut Button, primary: bool) {
@@ -71,7 +67,6 @@ pub(crate) fn style_button(button: &mut Button, primary: bool) {
     }
 }
 
-
 // Selected: soft blue. Not selected: like a secondary button.
 pub(crate) fn style_chip(button: &mut Button, selected: bool) {
     button.set_frame(theme::OUTLINE_BOX);
@@ -87,18 +82,15 @@ pub(crate) fn style_chip(button: &mut Button, selected: bool) {
     }
 }
 
-
 pub(crate) fn separator(x: i32, y: i32, w: i32) {
     let mut line = Frame::new(x, y, w, 1, None);
     line.set_frame(FrameType::FlatBox);
     line.set_color(theme::BORDER);
 }
 
-
 pub(crate) fn set_enabled<W: WidgetExt>(widget: &mut W, enabled: bool) {
     if enabled { widget.activate(); } else { widget.deactivate(); }
 }
-
 
 // FLTK mixes the background of a disabled input with the window, which in the
 // dark theme leaves it darker than the rest of the field. Inputs are made

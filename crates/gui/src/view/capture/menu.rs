@@ -29,7 +29,6 @@ pub(super) struct Menu {
     bar: MenuBar,
 }
 
-
 // What the menu shows, decided by the window from the state.
 pub(super) struct MenuView {
     pub open_first: bool,
@@ -37,7 +36,6 @@ pub(super) struct MenuView {
     pub open_diff: bool,
     pub theme: ThemeMode,
 }
-
 
 impl Menu {
     // The items of File send the same messages as the buttons of the fields.

@@ -44,6 +44,16 @@ pub(super) fn update(
         Message::Filter(filter) => windows.results.set_filter(filter),
         Message::Refresh => windows.results.render(),
 
+        // The row of the shot shows the progress when the window is drawn
+        // again, after every message: a Tick only has to arrive.
+        Message::ShotProgress(captured) => {
+            if let Some(progress) = &mut state.progress {
+                progress.captured = captured;
+            }
+        }
+
+        Message::Tick => {}
+
         Message::ShotDone(step, result) => shot_done(state, step, result, "Saved"),
         Message::ShotOpened(step, result) => shot_done(state, step, result, "Opened"),
         Message::CompareDone(result) => compare_done(state, result),
@@ -60,13 +70,11 @@ fn shot_done(
     action: &str
 ) {
     state.busy = None;
+    state.progress = None;
 
     match result {
         Ok(shot) => {
-            state.status = Status::info(&format!(
-                "{action} {}", 
-                file_name(&shot.path)
-            ));
+            state.status = Status::info(&format!("{action} {}", file_name(&shot.path)));
 
             match step {
                 Step::First => state.first = Some(shot),
@@ -76,7 +84,6 @@ fn shot_done(
         Err(error) => state.status = Status::error(&error),
     }
 }
-
 
 fn compare_done(state: &mut State, result: Result<DiffFile, String>) {
     state.busy = None;
@@ -91,7 +98,6 @@ fn compare_done(state: &mut State, result: Result<DiffFile, String>) {
     }
 }
 
-
 fn diff_opened(
     state: &mut State,
     windows: &mut Windows,
@@ -101,10 +107,7 @@ fn diff_opened(
 
     match result {
         Ok(diff) => {
-            state.status = Status::info(&format!(
-                "Opened {}", 
-                file_name(&diff.path)
-            ));
+            state.status = Status::info(&format!("Opened {}", file_name(&diff.path)));
             windows.results.load(&diff);
             windows.results.show();
             state.diff = Some(diff);

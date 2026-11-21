@@ -29,7 +29,6 @@ pub(super) struct Fit {
     value: usize,
 }
 
-
 impl Fit {
     // The fonts are fixed width: every character is as wide as "M".
     pub(super) fn new(width: i32) -> Self {
@@ -79,7 +78,6 @@ pub(super) fn lines(row: &Row, fit: &Fit) -> Vec<String> {
     lines
 }
 
-
 // Line shown when no change passes the filter and the search.
 pub(super) fn empty() -> String {
     format!("\t{}(no changes match)", style(theme::TEXT_MUTED, VALUE_SIZE))
@@ -91,18 +89,15 @@ fn fill(color: Color) -> String {
     format!("{FORMAT}B{}", color.bits())
 }
 
-
 // Color, fixed-width font and size, at the start of a column.
 fn style(color: Color, size: i32) -> String {
     format!("{FORMAT}C{}{FORMAT}f{FORMAT}S{size}", color.bits())
 }
 
-
 // An empty line of the given font size, used as vertical space.
 fn space(size: i32) -> String {
     format!("{FORMAT}S{size}{FORMAT}.")
 }
-
 
 fn chars_that_fit(width: i32, size: i32) -> usize {
     draw::set_font(theme::FONT_MONO, size);
@@ -110,7 +105,6 @@ fn chars_that_fit(width: i32, size: i32) -> usize {
 
     ((f64::from(width) / char_width) as usize).max(10)
 }
-
 
 // Splits `text` in lines of at most `max` characters, cutting after a '\',
 // a space or a comma when there is one in the second half of the line.

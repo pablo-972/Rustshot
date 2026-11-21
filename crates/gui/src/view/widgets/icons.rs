@@ -16,17 +16,14 @@ pub(super) fn folder_open(color: Color) -> Option<SvgImage> {
     icon(&paint(FOLDER_OPEN, color), BUTTON_SIZE)
 }
 
-
 pub(super) fn search(color: Color) -> Option<SvgImage> {
     icon(&paint(SEARCH, color), BUTTON_SIZE)
 }
-
 
 // Icon of the windows, the same one the .exe has. It has its own colors.
 pub(crate) fn app_icon() -> Option<SvgImage> {
     icon(RUSTSHOT, APP_SIZE)
 }
-
 
 // Draws an icon in the middle of a widget. The icons are drawn each time
 // instead of set as the image of the widget, so they take the colors of the
@@ -46,7 +43,6 @@ fn paint(svg: &str, color: Color) -> String {
     let (r, g, b) = color.to_rgb();
     svg.replace("currentColor", &format!("#{r:02x}{g:02x}{b:02x}"))
 }
-
 
 // None if the SVG cannot be read: the widget is then shown without icon.
 fn icon(svg: &str, size: i32) -> Option<SvgImage> {

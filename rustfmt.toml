@@ -2,5 +2,4 @@ edition = "2024"
 max_width = 100
 fn_params_layout = "Tail"
 single_line_if_else_max_width = 100
-blank_lines_upper_bound = 1
-blank_lines_lower_bound = 0  
+blank_lines_upper_bound = 2

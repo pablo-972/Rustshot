@@ -5,6 +5,7 @@ use fltk::frame::Frame;
 use fltk::input::Input;
 use fltk::prelude::*;
 use fltk::window::Window;
+use kernel::SnapshotSummary;
 
 use super::layout::{
     BUTTON_WIDTH,
@@ -22,7 +23,7 @@ use super::layout::{
 };
 use super::menu::{Menu, MenuView};
 use super::step_row::{StepRow, StepView};
-use crate::format::{file_name, format_count};
+use crate::format::format_count;
 use crate::theme;
 use crate::types::{
     DiffFile,
@@ -57,7 +58,6 @@ pub(crate) struct CaptureWindow {
     status: Frame,
     clear: Button,
 }
-
 
 impl CaptureWindow {
     pub(crate) fn new(sender: Sender<Message>, output: &str) -> Self {
@@ -214,7 +214,8 @@ impl CaptureWindow {
             enabled: idle && both_done,
             openable: idle,
             primary: both_done && !has_diff,
-            running: matches!(state.busy, Some(Task::Compare | Task::OpenDiff)),
+            running: matches!(state.busy, Some(Task::Compare | Task::OpenDiff))
+                .then(|| "Working…".to_string()),
             label: "Compare",
             done: state.diff.as_ref().map(diff_info),
         });
@@ -250,29 +251,33 @@ fn footer(sender: Sender<Message>) -> (Frame, Button) {
     (status, clear)
 }
 
-
-// A shot is running while it is taken or opened.
-fn running(state: &State, step: Step) -> bool {
-    state.busy == Some(Task::Shoot(step)) || state.busy == Some(Task::OpenShot(step))
+// While a shot is taken: the keys and values captured so far and the seconds,
+// like Regshot. While it is opened: only that it is working.
+fn running(state: &State, step: Step) -> Option<String> {
+    match (state.busy, &state.progress) {
+        (Some(Task::Shoot(shot)), Some(progress)) if shot == step => Some(format!(
+            "{} · {} s",
+            counts(&progress.captured),
+            progress.started.elapsed().as_secs()
+        )),
+        (Some(Task::OpenShot(shot)), _) if shot == step => Some("Working…".to_string()),
+        _ => None,
+    }
 }
-
 
 fn shot_info(shot: &ShotFile) -> String {
-    let summary = &shot.snapshot.summary;
+    counts(&shot.snapshot.summary)
+}
 
+// "12,345 keys, 67,890 values"
+fn counts(summary: &SnapshotSummary) -> String {
     format!(
-        "{} keys, {} values · {}",
+        "{} keys, {} values",
         format_count(summary.registry_keys),
-        format_count(summary.registry_values),
-        file_name(&shot.path)
+        format_count(summary.registry_values)
     )
 }
 
-
 fn diff_info(result: &DiffFile) -> String {
-    format!(
-        "{} changes · {}",
-        format_count(result.diff.summary.total),
-        file_name(&result.path)
-    )
+    format!("{} changes", format_count(result.diff.summary.total))
 }

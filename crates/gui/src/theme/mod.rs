@@ -3,8 +3,8 @@
 mod boxes;
 mod colors;
 mod fonts;
-mod palette;
 mod system;
+
 
 pub(crate) use boxes::{
     FILLED_BOX,
@@ -33,6 +33,8 @@ pub(crate) use colors::{
     TEXT_MUTED,
     TEXT_SECONDARY,
     WARNING,
+    set_mode,
+    style_title_bar,
 };
 pub(crate) use fonts::{
     FONT,
@@ -40,4 +42,3 @@ pub(crate) use fonts::{
     FONT_MONO,
     load_fonts,
 };
-pub(crate) use palette::{set_mode, style_title_bar};

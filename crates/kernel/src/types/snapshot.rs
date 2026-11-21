@@ -19,7 +19,6 @@ pub struct Snapshot {
     pub data: SnapshotData,
 }
 
-
 #[derive(
     Debug,
     Clone,
@@ -35,7 +34,6 @@ pub struct SnapshotMeta {
     pub device: DeviceInfo,
 }
 
-
 #[derive(
     Debug,
     Clone,
@@ -50,7 +48,6 @@ pub struct SnapshotData {
     #[serde(default)]
     pub registry: BTreeMap<String, RegistryKey>,
 }
-
 
 #[derive(
     Debug,
@@ -71,7 +68,6 @@ pub struct SystemInfo {
     pub architecture: Option<String>,
 }
 
-
 #[derive(
     Debug,
     Clone,
@@ -87,14 +83,13 @@ pub struct DeviceInfo {
     pub domain: Option<String>,
 }
 
-
 #[derive(
-    Debug, 
-    Clone, 
-    Default, 
-    PartialEq, 
-    Eq, 
-    Serialize, 
+    Debug,
+    Clone,
+    Default,
+    PartialEq,
+    Eq,
+    Serialize,
     Deserialize
 )]
 pub struct SnapshotSummary {

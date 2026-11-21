@@ -10,7 +10,6 @@ pub(crate) struct Windows {
     pub results: ResultsWindow,
 }
 
-
 impl Windows {
     pub(crate) fn new(sender: Sender<Message>, output: &str) -> Self {
         let capture = CaptureWindow::new(sender, output);

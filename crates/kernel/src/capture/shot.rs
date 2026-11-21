@@ -10,8 +10,10 @@ use crate::types::{
 };
 
 
-pub fn shot() -> Result<Snapshot> {
-    let registry = registry::capture()?;
+/// Captures the system. `report` is called as the capture goes, with the
+/// keys and values captured so far.
+pub fn shot(mut report: impl FnMut(SnapshotSummary)) -> Result<Snapshot> {
+    let registry = registry::capture(&mut report)?;
 
     Ok(Snapshot {
         meta: SnapshotMeta {
@@ -21,10 +23,7 @@ pub fn shot() -> Result<Snapshot> {
         },
         summary: SnapshotSummary {
             registry_keys: registry.len(),
-            registry_values: registry.values()
-                .map(|key| key.values
-                .len())
-                .sum(),
+            registry_values: registry.values().map(|key| key.values.len()).sum(),
         },
         data: SnapshotData { registry },
     })

@@ -5,14 +5,15 @@ use fltk::dialog::{NativeFileChooser, NativeFileChooserType};
 
 use super::tasks;
 use crate::format::file_name;
-use crate::view::{CaptureWindow, Windows};
 use crate::types::{
     Message,
+    Progress,
     State,
     Status,
     Step,
     Task,
 };
+use crate::view::{CaptureWindow, Windows};
 
 
 pub(super) fn browse(capture: &mut CaptureWindow) {
@@ -22,7 +23,6 @@ pub(super) fn browse(capture: &mut CaptureWindow) {
         capture.set_output(&dir.to_string_lossy());
     }
 }
-
 
 pub(super) fn shoot(
     state: &mut State,
@@ -42,14 +42,11 @@ pub(super) fn shoot(
     discard_after(state, windows, step);
 
     state.busy = Some(Task::Shoot(step));
-    state.status = Status::info(match step {
-        Step::First => "Taking 1st shot…",
-        Step::Second => "Taking 2nd shot…",
-    });
+    state.progress = Some(Progress::start());
+    state.status = Status::info("Working…");
 
     tasks::shoot(step, path, sender);
 }
-
 
 pub(super) fn compare(
     state: &mut State,
@@ -78,14 +75,12 @@ pub(super) fn compare(
     tasks::compare(before, after, output_path(capture, &name), sender);
 }
 
-
 pub(super) fn view_results(state: &State, windows: &mut Windows) {
     if let Some(diff) = &state.diff {
         windows.results.load(diff);
         windows.results.show();
     }
 }
-
 
 // Uses a snapshot saved before instead of taking it again.
 pub(super) fn open_shot(
@@ -107,7 +102,6 @@ pub(super) fn open_shot(
 
     tasks::open_shot(step, path, sender);
 }
-
 
 pub(super) fn open_diff(
     state: &mut State,
@@ -137,7 +131,6 @@ fn discard_after(state: &mut State, windows: &mut Windows, step: Step) {
     windows.results.hide();
 }
 
-
 // Checks the output folder and the file name of a step before using them.
 fn check(capture: &CaptureWindow, name: &str) -> Result<(), &'static str> {
     if capture.output().is_empty() {
@@ -157,22 +150,18 @@ fn check(capture: &CaptureWindow, name: &str) -> Result<(), &'static str> {
     Ok(())
 }
 
-
 fn output_path(capture: &CaptureWindow, name: &str) -> PathBuf {
     Path::new(&capture.output()).join(name)
 }
-
 
 // System dialogs to pick a folder or a JSON file. None if they are cancelled.
 fn choose_folder(start: &str) -> Option<PathBuf> {
     choose(NativeFileChooserType::BrowseDir, start)
 }
 
-
 fn choose_file(start: &str) -> Option<PathBuf> {
     choose(NativeFileChooserType::BrowseFile, start)
 }
-
 
 fn choose(kind: NativeFileChooserType, start: &str) -> Option<PathBuf> {
     let mut chooser = NativeFileChooser::new(kind);

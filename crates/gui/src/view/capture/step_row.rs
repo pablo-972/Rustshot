@@ -37,17 +37,15 @@ pub(super) struct StepRow {
     pub button: Button,
 }
 
-
 // What a row shows, decided by the window from the state.
 pub(super) struct StepView {
     pub enabled: bool,
     pub openable: bool,
     pub primary: bool,
-    pub running: bool,
+    pub running: Option<String>,
     pub label: &'static str,
     pub done: Option<String>,
 }
-
 
 impl StepRow {
     pub(super) fn new(
@@ -100,11 +98,11 @@ impl StepRow {
         let done = step.done.is_some();
         self.badge.set_color(if done { theme::SUCCESS_BG } else { theme::CARD });
 
-        // Only the result of the step, or that it is running: no help texts.
+        // Only how the step goes while it runs, or its result: no help texts.
         let (text, color) = match (step.running, step.done) {
-            (true, _) => ("Working…".to_string(), theme::TEXT_SECONDARY),
-            (false, Some(info)) => (info, theme::SUCCESS),
-            (false, None) => (String::new(), theme::TEXT_SECONDARY),
+            (Some(running), _) => (running, theme::TEXT_SECONDARY),
+            (None, Some(info)) => (info, theme::SUCCESS),
+            (None, None) => (String::new(), theme::TEXT_SECONDARY),
         };
 
         self.info.set_label(&text);

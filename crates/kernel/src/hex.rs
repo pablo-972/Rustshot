@@ -10,7 +10,6 @@ pub fn serialize<S: Serializer>(bytes: &[u8], serializer: S) -> Result<S::Ok, S:
     serializer.serialize_str(&encode(bytes))
 }
 
-
 pub fn deserialize<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Vec<u8>, D::Error> {
     let hex = String::deserialize(deserializer)?;
 
