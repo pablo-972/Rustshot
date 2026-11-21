@@ -115,3 +115,36 @@ fn preview(bytes: &[u8]) -> String {
 fn clean(text: &str) -> String {
     text.replace(['\t', '\r', '\n', FORMAT], " ")
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+
+    #[test]
+    fn row_matches_its_filter_and_all() {
+        let row = Row::new(Filter::KeysAdded, r"HKLM\Run", "(new key)".to_string());
+
+        assert!(row.matches(Filter::All, ""));
+        assert!(row.matches(Filter::KeysAdded, ""));
+        assert!(!row.matches(Filter::KeysDeleted, ""));
+    }
+
+    #[test]
+    fn search_looks_in_key_and_value_ignoring_case() {
+        let row = Row::new(Filter::ValuesAdded, r"HKLM\Run", "Updater = Sz: C:\\upd.exe".into());
+
+        assert!(row.matches(Filter::All, "run"));
+        assert!(row.matches(Filter::All, "upd.exe"));
+        assert!(!row.matches(Filter::All, "notepad"));
+    }
+
+    #[test]
+    fn text_is_cleaned_of_tabs_new_lines_and_format_codes() {
+        let row = Row::new(Filter::ValuesAdded, "a\tb", format!("c\nd{FORMAT}e"));
+
+        assert_eq!(row.key, "a b");
+        assert_eq!(row.text, "c d e");
+    }
+}

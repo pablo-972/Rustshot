@@ -28,3 +28,37 @@ pub fn deserialize<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Vec<u8>
 fn encode(bytes: &[u8]) -> String {
     bytes.iter().map(|b| format!("{b:02x}")).collect()
 }
+
+
+#[cfg(test)]
+mod tests {
+    use serde::{Deserialize, Serialize};
+
+
+    #[derive(Debug, PartialEq, Serialize, Deserialize)]
+    struct Bytes(#[serde(with = "crate::hex")] Vec<u8>);
+
+    fn parse(json: &str) -> Result<Bytes, serde_json::Error> {
+        serde_json::from_str(json)
+    }
+
+    #[test]
+    fn bytes_are_lowercase_hex() {
+        let json = serde_json::to_string(&Bytes(vec![0x0a, 0xff, 0x00])).unwrap();
+        assert_eq!(json, r#""0aff00""#);
+    }
+
+    #[test]
+    fn hex_goes_back_to_the_same_bytes() {
+        assert_eq!(parse(r#""0aff00""#).unwrap(), Bytes(vec![0x0a, 0xff, 0x00]));
+        assert_eq!(parse(r#""0AFF""#).unwrap(), Bytes(vec![0x0a, 0xff]));
+        assert_eq!(parse(r#""""#).unwrap(), Bytes(vec![]));
+    }
+
+    #[test]
+    fn invalid_hex_is_an_error_not_a_panic() {
+        assert!(parse(r#""abc""#).is_err());
+        assert!(parse(r#""zz""#).is_err());
+        assert!(parse(r#""éé""#).is_err()); // 4 bytes: even, but not ASCII
+    }
+}

@@ -129,3 +129,41 @@ fn wrap(text: &str, max: usize) -> Vec<String> {
     lines.push(chars[start..].iter().collect());
     lines
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+
+    #[test]
+    fn short_text_is_one_line() {
+        assert_eq!(wrap(r"HKLM\Software", 40), [r"HKLM\Software"]);
+    }
+
+    #[test]
+    fn long_text_is_cut_after_a_backslash() {
+        let lines = wrap(r"HKLM\SOFTWARE\Microsoft\Windows", 20);
+
+        assert_eq!(lines, [r"HKLM\SOFTWARE\", r"Microsoft\Windows"]);
+    }
+
+    #[test]
+    fn text_without_places_to_cut_is_cut_at_the_limit() {
+        let lines = wrap(&"a".repeat(25), 10);
+
+        assert_eq!(lines, ["a".repeat(10), "a".repeat(10), "a".repeat(5)]);
+    }
+
+    #[test]
+    fn wrapping_keeps_every_character() {
+        let text = r"HKU\S-1-5-21-1004\Software\Classes\CLSID\{0000-1111}, more text";
+
+        for max in [10, 17, 33] {
+            let lines = wrap(text, max);
+
+            assert_eq!(lines.concat(), text);
+            assert!(lines.iter().all(|line| line.chars().count() <= max));
+        }
+    }
+}

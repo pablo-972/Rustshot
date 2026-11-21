@@ -16,6 +16,18 @@ target = "x86_64-pc-windows-gnu"
 
 # Static linking: the C runtime and the MinGW libraries go inside the .exe,
 # so it is a single file with no extra DLLs.
+#
+# The default target is static too, so `cargo test` runs its .exe in Wine
+# without looking for MinGW DLLs.
+[target.x86_64-pc-windows-gnu]
+runner = "wine"
+rustflags = [
+    "-C",
+    "target-feature=+crt-static",
+    "-C",
+    "link-arg=-static",
+]
+
 [target.x86_64-win7-windows-gnu]
 rustflags = [
     "-C",

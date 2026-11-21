@@ -43,3 +43,26 @@ fn summarize(registry: &RegistryDiff) -> DiffSummary {
 
     DiffSummary { registry, total }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+
+    #[test]
+    fn total_counts_changes_but_not_what_was_not_compared() {
+        let registry = RegistryDiff {
+            keys_added: vec!["a".into(), "b".into()],
+            keys_deleted: vec!["c".into()],
+            not_compared: vec!["d".into(), "e".into()],
+            ..RegistryDiff::default()
+        };
+        let summary = summarize(&registry);
+
+        assert_eq!(summary.registry.keys_added, 2);
+        assert_eq!(summary.registry.keys_deleted, 1);
+        assert_eq!(summary.registry.not_compared, 2);
+        assert_eq!(summary.total, 3);
+    }
+}

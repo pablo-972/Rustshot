@@ -108,3 +108,115 @@ fn union<'a, V>(
 ) -> BTreeSet<&'a String> {
     a.keys().chain(b.keys()).collect()
 }
+
+
+#[cfg(test)]
+mod tests {
+    use std::collections::BTreeMap;
+
+    use super::*;
+    use crate::types::RegistryValue;
+
+
+    fn key(values: &[(&str, u32)]) -> RegistryKey {
+        let values = values
+            .iter()
+            .map(|(name, n)| (name.to_string(), RegistryValue::Dword(*n)))
+            .collect();
+
+        RegistryKey { values }
+    }
+
+    fn data(keys: &[(&str, RegistryKey)], inaccessible: &[&str]) -> SnapshotData {
+        SnapshotData {
+            registry: keys.iter().map(|(path, key)| (path.to_string(), key.clone())).collect(),
+            inaccessible: inaccessible.iter().map(|path| path.to_string()).collect(),
+        }
+    }
+
+    #[test]
+    fn same_snapshots_have_no_changes() {
+        let snapshot = data(&[(r"HKLM\A", key(&[("x", 1)]))], &[]);
+        let diff = compare(&snapshot, &snapshot);
+
+        assert_eq!(diff, RegistryDiff::default());
+    }
+
+    #[test]
+    fn added_key_shows_its_values_as_added() {
+        let before = data(&[], &[]);
+        let after = data(&[(r"HKLM\Run", key(&[("evil", 1)]))], &[]);
+        let diff = compare(&before, &after);
+
+        assert_eq!(diff.keys_added, [r"HKLM\Run"]);
+        assert_eq!(diff.values_added.len(), 1);
+        assert_eq!(diff.values_added[0].name, "evil");
+        assert!(diff.keys_deleted.is_empty() && diff.values_deleted.is_empty());
+    }
+
+    #[test]
+    fn deleted_key_shows_its_values_as_deleted() {
+        let before = data(&[(r"HKLM\Old", key(&[("a", 1), ("b", 2)]))], &[]);
+        let after = data(&[], &[]);
+        let diff = compare(&before, &after);
+
+        assert_eq!(diff.keys_deleted, [r"HKLM\Old"]);
+        assert_eq!(diff.values_deleted.len(), 2);
+        assert!(diff.keys_added.is_empty() && diff.values_added.is_empty());
+    }
+
+    #[test]
+    fn values_are_added_deleted_and_modified() {
+        let before = data(&[(r"HKLM\K", key(&[("same", 1), ("gone", 2), ("changed", 3)]))], &[]);
+        let after = data(&[(r"HKLM\K", key(&[("same", 1), ("new", 4), ("changed", 5)]))], &[]);
+        let diff = compare(&before, &after);
+
+        assert!(diff.keys_added.is_empty() && diff.keys_deleted.is_empty());
+        assert_eq!(diff.values_added[0].name, "new");
+        assert_eq!(diff.values_deleted[0].name, "gone");
+        assert_eq!(diff.values_modified.len(), 1);
+        assert_eq!(diff.values_modified[0].name, "changed");
+        assert_eq!(diff.values_modified[0].before, RegistryValue::Dword(3));
+        assert_eq!(diff.values_modified[0].after, RegistryValue::Dword(5));
+    }
+
+    #[test]
+    fn inaccessible_keys_are_not_compared() {
+        // Unreadable in the first shot, readable in the second: without the
+        // skip, the whole subtree would show up as added.
+        let before = data(&[(r"HKLM\SAM", key(&[]))], &[r"HKLM\SAM\SAM"]);
+        let after = data(
+            &[
+                (r"HKLM\SAM", key(&[])),
+                (r"HKLM\SAM\SAM", key(&[("x", 1)])),
+                (r"HKLM\SAM\SAM\Domains", key(&[("y", 2)])),
+            ],
+            &[],
+        );
+        let diff = compare(&before, &after);
+
+        assert!(diff.keys_added.is_empty());
+        assert!(diff.values_added.is_empty());
+        assert_eq!(diff.not_compared, [r"HKLM\SAM\SAM"]);
+    }
+
+    #[test]
+    fn inside_checks_the_path_and_its_parents() {
+        let skipped = BTreeSet::from([r"HKLM\SAM\SAM"]);
+
+        assert!(inside(r"HKLM\SAM\SAM", &skipped));
+        assert!(inside(r"HKLM\SAM\SAM\Domains\Account", &skipped));
+        assert!(!inside(r"HKLM\SAM", &skipped));
+        assert!(!inside(r"HKLM\SAM\SAMX", &skipped));
+        assert!(!inside("HKLM", &skipped));
+    }
+
+    #[test]
+    fn union_has_the_keys_of_both_once() {
+        let a = BTreeMap::from([("x".to_string(), 1), ("y".to_string(), 2)]);
+        let b = BTreeMap::from([("y".to_string(), 3), ("z".to_string(), 4)]);
+        let keys: Vec<_> = union(&a, &b).into_iter().map(String::as_str).collect();
+
+        assert_eq!(keys, ["x", "y", "z"]);
+    }
+}
